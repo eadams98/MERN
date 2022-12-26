@@ -1,0 +1,54 @@
+const mongoose = require("mongoose")
+const schemaName = "users"
+
+console.log("inside userModel")
+mongoose.connect("mongodb://localhost:27017/recon", {
+    useNewUrlParser: true,
+    //useCreateIndex: true,
+    //useFindAndModify: false,
+    useUnifiedTopology: true
+}).then(() => console.log(`DB user connection successful!`))
+.catch((err)=>{console.log("error"); console.log(err);})
+
+const userSchema = new mongoose.Schema({
+  userID: {
+    type: String,
+    required: [true, 'user ID is mandatory']
+  },
+  emailID: {
+    type: String,
+    required: [true, 'user ID is mandatory']
+  },
+  password: {
+    type: String,
+    required: [true, 'password is mandatory']
+  },
+  name: {
+    first: { 
+      type: String, 
+      required: [true, 'first name is mandatory']
+    },
+    last: { 
+      type: String,
+      required: [true, 'last name is mandatory']
+    }
+  },
+  role: {
+    type: String,
+    required: [true, 'user role is mandatory']
+  },
+  access: {
+    type: Array,
+    default: []
+  }
+},
+{
+  timestamps: {
+    createdAt: true,
+    updatedAt: true
+  }
+})
+
+// Model
+const UserModel = mongoose.model('users', userSchema)
+module.exports = UserModel
