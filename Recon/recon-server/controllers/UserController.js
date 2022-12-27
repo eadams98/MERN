@@ -33,7 +33,7 @@ exports.register = async (req, res, next) => {
     if (failedValidattions.length > 0) {
       res.status(400).json({
         status: "fail",
-        data: `please fix these ${failedValidattions}`
+        message: `please fix these ${failedValidattions}`
       })
       return
     }
@@ -58,6 +58,7 @@ exports.register = async (req, res, next) => {
 }
 
 exports.login = async (req, res, next) => {
+  //setTimeout(async () => {
   const { email, password } = req.body;
   if (Helper.isMissingParams({"email": email, "password": password}, next)) {
     return
@@ -86,10 +87,11 @@ exports.login = async (req, res, next) => {
     
     res.status(404).json({
       status: "failed",
-      data: "Login Failed. Incorrect ID/Password please try again"
+      message: "Login Failed. Incorrect ID/Password please try again"
     })
 
   } catch (error) {
     next(Helper.generateError(400, error.message))
   }
+//}, 10000)
 }
