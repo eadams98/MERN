@@ -1,7 +1,6 @@
 const mongoose = require("mongoose")
 const schemaName = "users"
 
-console.log("inside userModel")
 mongoose.connect("mongodb://localhost:27017/recon", {
     useNewUrlParser: true,
     //useCreateIndex: true,
