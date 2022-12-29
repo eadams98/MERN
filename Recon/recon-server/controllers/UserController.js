@@ -79,7 +79,9 @@ exports.login = async (req, res, next) => {
         status: "success",
         data: {
           accesToken: accessToken,
-          refreshToken: refreshToken
+          refreshToken: refreshToken,
+          name: dbResponse.name,
+          ID: dbResponse.userID
         }
       })
       return
