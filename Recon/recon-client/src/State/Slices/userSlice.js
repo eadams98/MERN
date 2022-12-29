@@ -25,11 +25,16 @@ const  userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    resetUser: (state) => {
+      state.isLoading = false;
+      state.isError = false;
+      state.error = null;
+      state.isAuthenticate = false;
+      state.name = "";
+      state.user = null
+    },
     getUser: (state) => {
-      if (state.token) { return true}
-      else {
-        state.isLoading = true
-      }
+      state.isLoading = true
     },
     login: (state) => {
       state.isLoading = true
@@ -48,28 +53,54 @@ const  userSlice = createSlice({
     logout: (state) => {
       state.isAuthenticate = false;
       state.name = "";
+      state.user = null
+      state.isLoading = false
     }
   }
 });
 
 export const userSelector = (state) => state.user;
-export const {logout, login, getUser, loginSuccess, loginFail} = userSlice.actions;
+export const {logout, login, getUser, loginSuccess, loginFail, resetUser} = userSlice.actions;
 export default userSlice.reducer;
 
 //API
+export function resetAuth() {
+  return async (dispatch) => {
+    dispatch(getUser())
+    try {
+      dispatch(resetUser())
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}
 
 export function attemptLogin(user, pass) {
   console.log("ATTEMPT LOGIN DISPATCH")
   return async (dispatch) => {
     dispatch(getUser())
+    setTimeout(async ()=>{
+      try {
+        console.log("Before")
+        const response = await UserService.loginAttempt({ email: user, password: pass })
+        console.log("Response = ", response.data)
+        dispatch(loginSuccess(response.data.data))
+      } catch (error) {
+        console.log(error.response.data)
+        dispatch(loginFail(error.response.data.message))
+      }
+    }, 10000)
+    
+  }
+}
+
+export function attemptLogout() {
+  return async (dispatch) => {
+    dispatch(getUser())
     try {
-      console.log("Before")
-      const response = await UserService.loginAttempt({ email: user, password: pass })
-      console.log("Response = ", response.data)
-      dispatch(loginSuccess(response.data.data))
+      dispatch(logout())
     } catch (error) {
-      console.log(error.response.data)
-      dispatch(loginFail(error.response.data.message))
+      console.log(error)
     }
   }
 }

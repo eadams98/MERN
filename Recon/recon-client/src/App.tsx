@@ -16,6 +16,8 @@ import ProtectedRoute from './Utilities/RouteGuard';
 import PrivateRoutes from './Utilities/PrivateRoute';
 import { useSelector } from 'react-redux';
 import { userSelector } from './State/Slices/userSlice';
+import PageNotFound from './PageNotFound';
+import GenerateReport from './Routes/Home/Report/Create/GenerateNewReport';
 
 function App() {
 
@@ -42,9 +44,14 @@ function App() {
     <div className="App">
       <Router>
         <Routes>
+          <Route element={<PageNotFound/>} path='*'/>
           <Route element={<Login user={user}/>} path="/" />
           <Route element={<PrivateRoutes/>}>
-            <Route element={<Home/>} path="/home" />
+            <Route element={<Home/>} path="/home/" >
+              <Route path="ok" element={<div>Hello</div>}/>
+              <Route path="report/view" element={<GenerateReport/>}/>
+              <Route path="report/create" element={<div>report create</div>}/>
+            </Route>
           </Route>
         </Routes>
       </Router>
