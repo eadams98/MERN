@@ -68,6 +68,23 @@ exports.isValidUser = async (user) => {
   return false
 }
 
+exports.isAdminUser = async (user) => {
+  const foundUser = await UserModel.findOne({ userID: user })
+  if (foundUser && foundUser.role === "Admin") {
+    return true
+  }
+  return false
+}
+
+exports.isValidUserRole = (role) => {
+  const ROLES = new Set(["contractor", "jr. contractor", "school", "council"])
+  const lowercaseRole = `${role}`.toLowerCase()
+  if (ROLES.has(lowercaseRole)) {
+    return true
+  }
+  return false
+}
+
 // error mappings
 /*exports.missingFieldMapping = {
   email: "",

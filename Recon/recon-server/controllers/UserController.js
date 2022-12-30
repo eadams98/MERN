@@ -10,6 +10,8 @@ const schemaName = 'users'
 
 exports.register = async (req, res, next) => {
   const { email, password, name, role, userID } = req.body
+  const { user } = req
+  console.log(req, user)
   if (Helper.isMissingParams({"email": email, "password": password, "name": name, "role": role, "userID": userID}, next)) {
     return
   }
@@ -82,7 +84,7 @@ exports.login = async (req, res, next) => {
 
     if (dbResponse) {
       dbResponse.exp = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7)
-      const accessToken = jwt.sign({ name: dbResponse.userID, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
+      const accessToken = jwt.sign({ userID: dbResponse.userID, role: dbResponse.role, access: dbResponse.access, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
       const refreshToken = jwt.sign( dbResponse.toJSON(), process.env.REFRESH_TOKEN_SECRET )
       refreshTokens.push(refreshToken)
       res.status(200).json({
@@ -108,7 +110,7 @@ exports.login = async (req, res, next) => {
 //}, 10000)
 }
 
-exports.checkRefreshToken = async (req, res, next) => {
+exports.checkRefreshTokenAndGenerateNewAccessToken = async (req, res, next) => {
   const { token }  = req.body
   if (Helper.isMissingParams({"token": token}, next)) {
     return
@@ -121,6 +123,7 @@ exports.checkRefreshToken = async (req, res, next) => {
   }
 
   jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, function(err, decodedUser) {
+    console.log(decodedUser)
     if (err) {
       /*
         err = {
@@ -137,7 +140,7 @@ exports.checkRefreshToken = async (req, res, next) => {
     } else {
       res.status(200).json({
         status: 'success',
-        data: Helper.generateAccessToken({name: decodedUser.name})
+        data: Helper.generateAccessToken({ userID: decodedUser.userID, role: decodedUser.role, access: decodedUser.access, exp: Math.floor(Date.now() / 1000) + 60 })
       })
       return
     } 

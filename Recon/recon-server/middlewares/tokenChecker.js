@@ -6,15 +6,15 @@ module.exports = (req,res,next) => {
   // decode token
   if (token) {
     // verifies secret and checks exp
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
-      console.log(decoded)
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decodedUser) {
+      console.log(decodedUser)
         if (err) {
             return res.status(401).json({
               status: 'fail',
               data: err
             });
         }
-      req.decoded = decoded;
+      req.user = decodedUser;
       next();
     });
   } else {

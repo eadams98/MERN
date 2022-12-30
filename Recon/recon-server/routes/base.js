@@ -16,7 +16,7 @@ const tokenChecker = require('../middlewares/tokenChecker');
 // routes
 routing.post("/login", UserController.login)
 routing.post("/register", tokenChecker, UserController.register)
-routing.post("/generate-token", UserController.checkRefreshToken)
+routing.post("/generate-token", UserController.checkRefreshTokenAndGenerateNewAccessToken)
 
 routing.post("/create-report", tokenChecker, ReportController.createReport)
 
