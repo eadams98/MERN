@@ -1,5 +1,10 @@
 import { useState } from "react";
 import {
+  Link,
+  Outlet,
+  Route,
+  Router,
+    Routes,
     useNavigate
   } from "react-router-dom";
 //import LoginService from "../Services/LoginService";
@@ -7,7 +12,8 @@ import {
 import swal from "sweetalert2";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Form, Alert, Card, Button } from "react-bootstrap";
+import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav } from "react-bootstrap";
+import PrimaryNav from "./Navbar/PrimaryNav";
 
 function Home(props) {
 
@@ -15,12 +21,18 @@ function Home(props) {
     const [userErrorForm, setUserErrorForm] = useState({ name: "", password: ""});
     const navigate = useNavigate();
 
+
     return (
         
         <Container fluid className='border vh-100'>
-            <Row>
-              <Col>HOME APP</Col>
-              <Col> <Button onClick={() => navigate("/")}> </Button> </Col>
+            <PrimaryNav navHeight="10"/>
+
+            <Row style={{height: "90%", backgroundColor: "grey"}}>
+              {/*<Col>HOME APP</Col>
+              <Col> <Button onClick={() => navigate("ok")}> </Button> </Col>*/}
+              <Col>
+                <Outlet/>
+              </Col>
             </Row> 
         </Container>
     )

@@ -9,7 +9,7 @@ import swal from "sweetalert2";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Form, Alert, Card, Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { attemptLogin, attemptLoginAsync, userSelector } from "../../State/Slices/userSlice";
+import { attemptLogin, attemptLoginAsync, resetAuth, userSelector } from "../../State/Slices/userSlice";
 
 const fakeData = {
     Eric: "Adams"
@@ -53,6 +53,8 @@ function Login(props) {
     useEffect(()=>{
         if (user.user) {
             navigate("/home")
+        } else {
+            dispatch(resetAuth())
         }
     }, []);
     useEffect(()=>{
