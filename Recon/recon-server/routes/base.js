@@ -9,14 +9,16 @@ const { router } = require('../app');
 // Controllers
 const UserController = require("../controllers/UserController")
 const ReportController = require("../controllers/ReportController")
+const tokenChecker = require('../middlewares/tokenChecker');
 
 // helpers
 
 // routes
 routing.post("/login", UserController.login)
-routing.post("/register", UserController.register)
+routing.post("/register", tokenChecker, UserController.register)
+routing.post("/generate-token", UserController.checkRefreshTokenAndGenerateNewAccessToken)
 
-routing.post("/create-report", ReportController.createReport)
+routing.post("/create-report", tokenChecker, ReportController.createReport)
 
 routing.all("*", (req, res, next) => {
   res.status(404).status({

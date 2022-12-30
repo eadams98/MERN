@@ -33,8 +33,12 @@ const userSchema = new mongoose.Schema({
     }
   },
   role: {
-    type: String,
+    type: String, //Council, School, Contractor, Jr. Devloper
     required: [true, 'user role is mandatory']
+  },
+  connections: {
+    type: Array, // userIDs (admin will always be empty. jr will only have 1, everyone else can have multiple)
+    default: []
   },
   access: {
     type: Array,

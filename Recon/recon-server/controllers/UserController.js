@@ -9,25 +9,37 @@ let refreshTokens = [] // possibly many users, so this will hold
 const schemaName = 'users'
 
 exports.register = async (req, res, next) => {
-  console.log("register")
-  const { email, password, name, role } = req.body
-  if (Helper.isMissingParams({"email": email, "password": password, "name": name}, next)) {
+  const { email, password, name, role, userID } = req.body
+  const { user } = req
+  console.log(req, user)
+  if (Helper.isMissingParams({"email": email, "password": password, "name": name, "role": role, "userID": userID}, next)) {
     return
   }
 
   try {
     const failedValidattions = []
-    if (!Validator.isValidName(name)) {
-      failedValidattions.push(ErrorMapping.validator.name + ". ")
-    }
-    if (!Validator.isValidPassword(password)) {
-      failedValidattions.push(ErrorMapping.validator.password + ". ")
-    }
-    if (!Validator.isValidEmail(email)) {
-      failedValidattions.push(ErrorMapping.validator.email + ". ")
-    }
-    if (!(await Validator.isUniqueEmail(email))) {
-      failedValidattions.push(ErrorMapping.validator.uniqueEmail + ". ")
+    if (!(await Validator.isValidUser(userID))) {
+      failedValidattions.push(ErrorMapping.validator.validUser + ". ")
+    } else {
+      if (!(await Validator.isAdminUser(userID))) {
+        failedValidattions.push(ErrorMapping.validator.nonAdmin + ". ")
+      } else {
+        if (!Validator.isValidName(name)) {
+          failedValidattions.push(ErrorMapping.validator.name + ". ")
+        }
+        if (!Validator.isValidPassword(password)) {
+          failedValidattions.push(ErrorMapping.validator.password + ". ")
+        }
+        if (!Validator.isValidEmail(email)) {
+          failedValidattions.push(ErrorMapping.validator.email + ". ")
+        }
+        if (!Validator.isValidUserRole(role)) {
+          failedValidattions.push(ErrorMapping.validator.roles + ". ")
+        }
+        if (!(await Validator.isUniqueEmail(email))) {
+          failedValidattions.push(ErrorMapping.validator.uniqueEmail + ". ")
+        }
+      }
     }
 
     if (failedValidattions.length > 0) {
@@ -39,14 +51,14 @@ exports.register = async (req, res, next) => {
     }
 
     const counter = await Helper.getCounter(schemaName)
-    const userID = Helper.zeroPad(counter, 3)
+    const formattedGeneratedUserNumber = Helper.zeroPad(counter, 3)
 
     let newUser = {
-      userID: `UID-${userID}`,
+      userID: `UID-${formattedGeneratedUserNumber}`,
       emailID: email,
       password: password,
       name: name,
-      role: "Admin"
+      role: role,
     }
     const dbResponse = await UserModel.create(newUser)
     await Helper.incrementCounter(schemaName, counter)
@@ -72,14 +84,16 @@ exports.login = async (req, res, next) => {
 
     if (dbResponse) {
       dbResponse.exp = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7)
-      const accessToken = jwt.sign({ name: dbResponse.userID, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
+      const accessToken = jwt.sign({ userID: dbResponse.userID, role: dbResponse.role, access: dbResponse.access, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
       const refreshToken = jwt.sign( dbResponse.toJSON(), process.env.REFRESH_TOKEN_SECRET )
       refreshTokens.push(refreshToken)
       res.status(200).json({
         status: "success",
         data: {
           accesToken: accessToken,
-          refreshToken: refreshToken
+          refreshToken: refreshToken,
+          name: dbResponse.name,
+          ID: dbResponse.userID
         }
       })
       return
@@ -95,3 +109,42 @@ exports.login = async (req, res, next) => {
   }
 //}, 10000)
 }
+
+exports.checkRefreshTokenAndGenerateNewAccessToken = async (req, res, next) => {
+  const { token }  = req.body
+  if (Helper.isMissingParams({"token": token}, next)) {
+    return
+  }
+  if(!refreshTokens.includes(token)) {
+    return res.status(403).json({
+      status: 'fail',
+      message: "Refresh token not recognized/found"
+    })
+  }
+
+  jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, function(err, decodedUser) {
+    console.log(decodedUser)
+    if (err) {
+      /*
+        err = {
+          name: 'TokenExpiredError',
+          message: 'jwt expired',
+          expiredAt: 1408621000
+        }
+      */
+      res.status(400).json({
+        status: 'fail',
+        data: err
+      })
+      return
+    } else {
+      res.status(200).json({
+        status: 'success',
+        data: Helper.generateAccessToken({ userID: decodedUser.userID, role: decodedUser.role, access: decodedUser.access, exp: Math.floor(Date.now() / 1000) + 60 })
+      })
+      return
+    } 
+  });
+  
+}
+
