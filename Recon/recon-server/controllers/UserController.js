@@ -9,25 +9,35 @@ let refreshTokens = [] // possibly many users, so this will hold
 const schemaName = 'users'
 
 exports.register = async (req, res, next) => {
-  console.log("register")
-  const { email, password, name, role } = req.body
-  if (Helper.isMissingParams({"email": email, "password": password, "name": name}, next)) {
+  const { email, password, name, role, userID } = req.body
+  if (Helper.isMissingParams({"email": email, "password": password, "name": name, "role": role, "userID": userID}, next)) {
     return
   }
 
   try {
     const failedValidattions = []
-    if (!Validator.isValidName(name)) {
-      failedValidattions.push(ErrorMapping.validator.name + ". ")
-    }
-    if (!Validator.isValidPassword(password)) {
-      failedValidattions.push(ErrorMapping.validator.password + ". ")
-    }
-    if (!Validator.isValidEmail(email)) {
-      failedValidattions.push(ErrorMapping.validator.email + ". ")
-    }
-    if (!(await Validator.isUniqueEmail(email))) {
-      failedValidattions.push(ErrorMapping.validator.uniqueEmail + ". ")
+    if (!(await Validator.isValidUser(userID))) {
+      failedValidattions.push(ErrorMapping.validator.validUser + ". ")
+    } else {
+      if (!(await Validator.isAdminUser(userID))) {
+        failedValidattions.push(ErrorMapping.validator.nonAdmin + ". ")
+      } else {
+        if (!Validator.isValidName(name)) {
+          failedValidattions.push(ErrorMapping.validator.name + ". ")
+        }
+        if (!Validator.isValidPassword(password)) {
+          failedValidattions.push(ErrorMapping.validator.password + ". ")
+        }
+        if (!Validator.isValidEmail(email)) {
+          failedValidattions.push(ErrorMapping.validator.email + ". ")
+        }
+        if (!Validator.isValidUserRole(role)) {
+          failedValidattions.push(ErrorMapping.validator.roles + ". ")
+        }
+        if (!(await Validator.isUniqueEmail(email))) {
+          failedValidattions.push(ErrorMapping.validator.uniqueEmail + ". ")
+        }
+      }
     }
 
     if (failedValidattions.length > 0) {
@@ -39,14 +49,14 @@ exports.register = async (req, res, next) => {
     }
 
     const counter = await Helper.getCounter(schemaName)
-    const userID = Helper.zeroPad(counter, 3)
+    const formattedGeneratedUserNumber = Helper.zeroPad(counter, 3)
 
     let newUser = {
-      userID: `UID-${userID}`,
+      userID: `UID-${formattedGeneratedUserNumber}`,
       emailID: email,
       password: password,
       name: name,
-      role: "Admin"
+      role: role,
     }
     const dbResponse = await UserModel.create(newUser)
     await Helper.incrementCounter(schemaName, counter)
@@ -97,3 +107,41 @@ exports.login = async (req, res, next) => {
   }
 //}, 10000)
 }
+
+exports.checkRefreshToken = async (req, res, next) => {
+  const { token }  = req.body
+  if (Helper.isMissingParams({"token": token}, next)) {
+    return
+  }
+  if(!refreshTokens.includes(token)) {
+    return res.status(403).json({
+      status: 'fail',
+      message: "Refresh token not recognized/found"
+    })
+  }
+
+  jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, function(err, decodedUser) {
+    if (err) {
+      /*
+        err = {
+          name: 'TokenExpiredError',
+          message: 'jwt expired',
+          expiredAt: 1408621000
+        }
+      */
+      res.status(400).json({
+        status: 'fail',
+        data: err
+      })
+      return
+    } else {
+      res.status(200).json({
+        status: 'success',
+        data: Helper.generateAccessToken({name: decodedUser.name})
+      })
+      return
+    } 
+  });
+  
+}
+
