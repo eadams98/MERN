@@ -4,6 +4,8 @@ import ReportService from "../../../../Services/Report";
 import { useSelector } from "react-redux";
 import { userSelector } from "../../../../State/Slices/userSlice";
 import Swal from "sweetalert2";
+import useRefreshToken from "../../../../Hooks/useRefreshToken";
+import useAxiosPersonal from "../../../../Hooks/useAxiosPersonal";
 
 const GenerateReport = () => {
   /*onst reportSchema = new mongoose.Schema({
@@ -42,6 +44,9 @@ const GenerateReport = () => {
 
   //variables
   const user = useSelector(userSelector)
+  const refresh = useRefreshToken()
+  const axios = useAxiosPersonal()
+
   const [reportForm, setReportForm] = useState({
     grade: "",
     week: {
@@ -127,17 +132,22 @@ const GenerateReport = () => {
     const sendForm = {
       ...reportForm,
       user: user.user.ID,
+      token: user.user.accesToken
     }
     let data, status;
+    console.log(user, user.user.refreshToken)
 
     try {
-      const response = await ReportService.createReport(sendForm);
+      const response = await axios.post('/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
       data = response.data.data
       status = 'success'
     } catch (error) {
-      data = error.response.data.message
+      console.log(error)
+      ///data = error.response.data.message
       status = 'fail'
     }
+    //const response = axios.post('http://localhost:4001/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
+
 
     Swal.fire({
       position: 'top',

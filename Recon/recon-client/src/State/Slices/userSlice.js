@@ -36,6 +36,10 @@ const  userSlice = createSlice({
     getUser: (state) => {
       state.isLoading = true
     },
+    updateUserToken: (state, {payload}) => {
+      state.user.accessToken = payload
+      state.isLoading = false
+    },
     login: (state) => {
       state.isLoading = true
     },
@@ -60,7 +64,7 @@ const  userSlice = createSlice({
 });
 
 export const userSelector = (state) => state.user;
-export const {logout, login, getUser, loginSuccess, loginFail, resetUser} = userSlice.actions;
+export const {logout, login, getUser, loginSuccess, loginFail, resetUser, updateUserToken} = userSlice.actions;
 export default userSlice.reducer;
 
 //API
@@ -69,6 +73,18 @@ export function resetAuth() {
     dispatch(getUser())
     try {
       dispatch(resetUser())
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}
+
+export function updateAuth(newAccessToken) {
+  console.log(newAccessToken)
+  return async (dispatch) => {
+    dispatch(getUser())
+    try {
+      dispatch(updateUserToken(newAccessToken))
     } catch (error) {
       console.log(error)
     }
@@ -104,6 +120,18 @@ export function attemptLogout() {
     }
   }
 }
+
+/*export function updateToken() {
+  return async (dispatch) => {
+    dispatch(getUser())
+    try {
+      //const response = await ReportService
+      dispatch(updateUserToken())
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}*/
 
 export const attemptLoginAsync = createAsyncThunk("user/login", async (user, id) => {
   try {
