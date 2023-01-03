@@ -2,7 +2,9 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
 module.exports = (req,res,next) => {
-  const token = req.body.token || req.query.token || req.headers['x-access-token']
+  console.log(req.headers.authorization)
+  const token = req.body.token || req.query.token || req.headers['x-access-token'] || req.headers['authorization'].split("Bearer ")[1]
+  console.log(token)
   // decode token
   if (token) {
     // verifies secret and checks exp
