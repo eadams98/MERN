@@ -50,18 +50,25 @@ exports.register = async (req, res, next) => {
       return
     }
 
-    const counter = await Helper.getCounter(schemaName)
+    const schemaNameWithRole = `${schemaName}-${role.toLowerCase()}`
+    const counter = await Helper.getCounter(schemaNameWithRole)
     const formattedGeneratedUserNumber = Helper.zeroPad(counter, 3)
 
+    const UserRoleToUserIDPrefixMapping = {
+      school: "SCHOOL",
+      council: "COUNCIL",
+      contractor: "CONTRACTOR",
+      "jr. contractor": "JR-CONTRACTOR",
+    }
     let newUser = {
-      userID: `UID-${formattedGeneratedUserNumber}`,
+      userID: `${UserRoleToUserIDPrefixMapping[role.toLowerCase()]}-${formattedGeneratedUserNumber}`,
       emailID: email,
       password: password,
       name: name,
-      role: role,
+      role: role.toUpperCase(),
     }
     const dbResponse = await UserModel.create(newUser)
-    await Helper.incrementCounter(schemaName, counter)
+    await Helper.incrementCounter(schemaNameWithRole, counter)
 
     res.status(200).json({ status: "success", data: dbResponse})
   } catch (error) {
@@ -93,7 +100,9 @@ exports.login = async (req, res, next) => {
           accessToken: accessToken,
           refreshToken: refreshToken,
           name: dbResponse.name,
-          ID: dbResponse.userID
+          ID: dbResponse.userID,
+          role: dbResponse.role,
+          access: dbResponse.access
         }
       })
       return
@@ -108,6 +117,29 @@ exports.login = async (req, res, next) => {
     next(Helper.generateError(400, error.message))
   }
 //}, 10000)
+}
+
+exports.logout = async (req, res, next) => {
+  const { token } = req.body
+  if (Helper.isMissingParams({"token": token}, next)) {
+    return
+  }
+
+  const refreshTokenLengthBeforeFilter = refreshTokens.length
+  refreshTokens = refreshTokens.filter(token => token != req.body.token)
+
+  if (refreshTokens.length < refreshTokenLengthBeforeFilter) {
+    res.status(200).json({
+      status: 'success',
+      data: 'refesh token removed'
+    })
+  } else {
+    res.status(401).json({
+      status: 'fail',
+      data: 'No refresh token found'
+    })
+  }
+  
 }
 
 exports.checkRefreshTokenAndGenerateNewAccessToken = async (req, res, next) => {
@@ -148,3 +180,71 @@ exports.checkRefreshTokenAndGenerateNewAccessToken = async (req, res, next) => {
   
 }
 
+exports.addConnectionToSelf = async (req, res, next) => { // should only be used by school, contractor, council
+  const { userIDToAdd } = req.body;
+  if (Helper.isMissingParams({"userIDToAdd": userIDToAdd}, next)) {
+    return 
+  }
+
+  try {
+    const failedValidattions = []
+    if (!(await Validator.isValidUser(userIDToAdd))) {
+      failedValidattions.push(ErrorMapping.validator.validUser + ". ")
+    } else {
+      if (!(await Validator.isValidRole(userIDToAdd, req.user.role))) {
+        failedValidattions.push("You do not have the access to add this connection" + ". ")
+      }
+      /*
+      1. if not already in each others connection list
+      2. 
+      */
+    }
+  
+    if (failedValidattions.length > 0) {
+      res.status(400).json({
+        status: "fail",
+        message: `please fix these ${failedValidattions}`
+      })
+      return
+    }
+
+    let dbResponse = await UserModel.findOneAndUpdate(
+      {userID: req.user.userID},
+      {$push: {connections: userIDToAdd}}
+    )
+    dbResponse = await UserModel.findOneAndUpdate(
+      {userID: userIDToAdd},
+      {$push: {connections: req.user.userID}}
+    )
+
+    res.status(200).json({
+      status: "success",
+      data: "connection added"
+    })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
+
+exports.getMyConnections = async (req, res, next) => {
+  try {
+    const dbResponse = await UserModel.findOne({userID: req.user.userID}, {connections: 1, _id: 0})
+    res.status(200).json({
+      status: 'status',
+      data: dbResponse.connections
+    })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
+
+exports.getUserNameAndUserIDByUserID = async (userID) => {
+  try {
+    const dbResponse = await UserModel.findOne({ userID: userID })
+    console.log("user found", dbResponse)
+    const userWithIDandName = { userID: dbResponse.userID, name: `${dbResponse.name.first.trim()} ${dbResponse.name.last.trim()}` }
+    return userWithIDandName
+  } catch (error) {
+    return "error"
+  }
+}
