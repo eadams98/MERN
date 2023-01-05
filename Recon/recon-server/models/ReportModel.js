@@ -32,7 +32,11 @@ const reportSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  user: {
+  createdByUser: {
+    type: String,
+    required: [true, 'submission must be linked to a user']
+  },
+  createdForUser: {
     type: String,
     required: [true, 'submission must be linked to a user']
   }

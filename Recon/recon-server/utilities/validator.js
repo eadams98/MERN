@@ -38,6 +38,24 @@ exports.isValidPassword = (password) => {
   return false
 }
 
+exports.isValidRole = async (userID, role) => { // WORK IN PROGRESS
+  try { //Council, School, Contractor, Jr. contractor
+    const validConnectionsForRole = {
+      school: new Set(["jr. contractor"]),
+      council: new Set(["jr. contractor"]),
+      contractor: new Set(["jr. contractor"]),
+      "jr. contractor": new Set(["contractor", "school"]),
+    }
+  
+    const user = await UserModel.findOne({ userID: userID })
+    console.log(userID, role, user.role.toLowerCase(), validConnectionsForRole)
+    if ( user && validConnectionsForRole[role.toLowerCase()].has(user.role.toLowerCase()) ) {return true}
+    return false
+  } catch (error) {
+    return false
+  }
+}
+
 // Report Validator
 exports.isValidGrade = (grade) => {
   const GRADES = new Set([
@@ -70,7 +88,7 @@ exports.isValidUser = async (user) => {
 
 exports.isAdminUser = async (user) => {
   const foundUser = await UserModel.findOne({ userID: user })
-  if (foundUser && foundUser.role === "Admin") {
+  if (foundUser && foundUser.role === "ADMIN") {
     return true
   }
   return false
