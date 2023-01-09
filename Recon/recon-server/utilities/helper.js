@@ -87,5 +87,7 @@ exports.incrementCounter = async (schemaName, counterValue) => {
 }
 
 exports.generateAccessToken = (user) => {
-  return jwt.sign({ name: user.name, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
+  //console.log("user", user) //user name is passed in login, not attached to token
+  // userID, role, access, exp, iat
+  return jwt.sign({ ...user, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
 }

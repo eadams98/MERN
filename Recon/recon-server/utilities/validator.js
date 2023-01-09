@@ -1,4 +1,5 @@
 // Models
+const ReportModel = require("../models/ReportModel");
 const UserModel = require("../models/UserModel")
 
 // User Validators
@@ -100,6 +101,14 @@ exports.isValidUserRole = (role) => {
   if (ROLES.has(lowercaseRole)) {
     return true
   }
+  return false
+}
+
+exports.isAuthorizedToUpdateReport = async (reportID, role, userID) => {
+  // _id will crash if you don't provide 12 24 value. Fix is to check before query
+  if (role === "ADMIN") { return true }
+  const foundReport = await ReportModel.findOne({ _id: reportID })
+  if (foundReport && (foundReport.createdByUser === userID || foundReport.createdForUser === userID)) { return true }
   return false
 }
 

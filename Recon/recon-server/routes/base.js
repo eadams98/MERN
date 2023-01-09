@@ -22,10 +22,12 @@ routing.post("/generate-token", UserController.checkRefreshTokenAndGenerateNewAc
 routing.delete("/logout", UserController.logout)
 
 routing.post("/create-report", tokenChecker, ReportController.createReport)
+routing.get("/get-my-report-weeks", tokenChecker, ReportController.getMyReportWeeks)
 routing.get("/get-my-users", tokenChecker, ReportController.getMyUsers)
 routing.get("/get-my-submitted-reports/:userID", tokenChecker, ReportController.getMySubmittedReportsForUser)
 routing.post("/get-contractor-report", tokenChecker, ReportController.getReportForContractorByWeekAndCreatedByAndCreatedFor)
 routing.post("/get-jr-contractor-report", tokenChecker, ReportController.getReportForJrContractorByWeekAndCreatedByAndCreatedFor)
+routing.put("/update-report", tokenChecker, ReportController.updateReport)
 
 
 routing.all("*", async (req, res, next) => {

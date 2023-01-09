@@ -11,5 +11,6 @@ exports.validator = {
   // Report
   grade: "Please enter a valid grade: [A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F+, F, F-]",
   description: "The description must be between 0 and 250 characters",
+  invalidAccessToUpdateReport: "You do not have the required access to update this report",
   
 }
