@@ -8,40 +8,7 @@ import useRefreshToken from "../../../../Hooks/useRefreshToken";
 import useAxiosPersonal from "../../../../Hooks/useAxiosPersonal";
 
 const GenerateReport = () => {
-  /*onst reportSchema = new mongoose.Schema({
-    grade: {
-      type: String,
-      required: [true, 'grade is mandatory']
-    },
-    submissionDate: {
-      type: Date,
-      required: [true, 'submission date is mandatory']
-    },
-    forWeek: {
-      start: {
-        type: Date,
-        required: [true, 'start date is mandatory']
-      },
-      end: {
-        type: Date,
-        required: [true, 'end date is mandatory']
-      }
-    },
-    description: {
-      type: String,
-    },
-    user: {
-      type: String,
-      required: [true, 'submission must be linked to a user']
-    }
-  },
-  {
-    timestamps: {
-      createdAt: true,
-      updatedAt: true
-    }
-  })*/
-
+  
   //variables
   const user = useSelector(userSelector)
   const refresh = useRefreshToken()

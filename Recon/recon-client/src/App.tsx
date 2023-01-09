@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { userSelector } from './State/Slices/userSlice';
 import PageNotFound from './PageNotFound';
 import GenerateReport from './Routes/Home/Report/Create/GenerateNewReport';
+import ViewWrapper from './Routes/Home/Report/View/wrapper';
 
 function App() {
 
@@ -49,8 +50,8 @@ function App() {
           <Route element={<PrivateRoutes/>}>
             <Route element={<Home/>} path="/home/" >
               <Route path="ok" element={<div>Hello</div>}/>
-              <Route path="report/view" element={<GenerateReport/>}/>
-              <Route path="report/create" element={<div>report create</div>}/>
+              <Route path="report/view" element={<ViewWrapper/>}/>
+              <Route path="report/create" element={<GenerateReport/>}/>
             </Route>
           </Route>
         </Routes>
