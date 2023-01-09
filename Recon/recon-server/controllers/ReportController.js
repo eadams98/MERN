@@ -68,7 +68,10 @@ exports.getMyUsers = async (req, res, next) => {
       userList.push(user)
     }
 
-    res.status(200).json(userList)
+    setTimeout(()=> {
+      res.status(200).json(userList)
+    }, 10000)
+    
   } catch (error) {
     next(Helper.generateError(400, error.message))
   }
@@ -83,7 +86,25 @@ exports.getMySubmittedReportsForUser = async (req, res, next) => {
     
     dbResponse.forEach( report => {console.log("report", report); weekRange.push(`${new Date(report.forWeek.start).toUTCString()} - ${new Date(report.forWeek.end).toUTCString()}`);})
 
-    res.status(200).json(weekRange)
+    setTimeout(()=> {
+      res.status(200).json(weekRange)
+    }, 10000)
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
+
+exports.getMyReportWeeks = async (req, res, next) => { // for jr. contractor. (might be better to make 1 method and switch case instead of many different)
+
+  try {
+    const dbResponse = await ReportModel.find({ createdForUser: req.user.userID }) // make it unique. no duplicat createdForUser
+    const weekRange = []
+    
+    dbResponse.forEach( report => {console.log("report", report); weekRange.push(`${new Date(report.forWeek.start).toUTCString()} - ${new Date(report.forWeek.end).toUTCString()}`);})
+
+    setTimeout(()=> {
+      res.status(200).json(weekRange)
+    }, 10000)
   } catch (error) {
     next(Helper.generateError(400, error.message))
   }
@@ -100,7 +121,7 @@ exports.getReportForContractorByWeekAndCreatedByAndCreatedFor = async (req, res,
     const weekList = week.split(" - ");
     const startDate = new Date(weekList[0])
     const endDate = new Date(weekList[1])
-    console.log(startDate, endDate)
+    console.log(req.user.userID, startDate, endDate)
     const dbResponse = await ReportModel.findOne({ createdByUser: req.user.userID, createdForUser: createdFor, forWeek: { start: startDate, end: endDate } })
     res.status(200).json(dbResponse)
   } catch (error) {
@@ -127,3 +148,41 @@ exports.getReportForJrContractorByWeekAndCreatedByAndCreatedFor = async (req, re
   }
 }
 
+exports.updateReport = async (req, res, next) => {
+  const { reportID, grade, description, /*need add revisions to Report */ } = req.body
+  if (Helper.isMissingParams({"reportID": reportID, "grade": grade, "description": description}, next)) {
+    return
+  }
+
+  try {
+    const failedValidattions = []
+    if (! await Validator.isAuthorizedToUpdateReport(reportID, req.user.role, req.user.userID)) {
+      failedValidattions.push(ErrorMapping.validator.invalidAccessToUpdateReport)
+    } else {
+      if (!Validator.isValidGrade(grade)) {
+        failedValidattions.push(ErrorMapping.validator.grade)
+      }
+    }
+
+    if (failedValidattions.length > 0) {
+      res.status(400).json({
+        status: "fail",
+        data: `please fix these ${failedValidattions}`
+      })
+      return
+    }
+
+    const dbResponse = await ReportModel.findOneAndUpdate(
+      { _id: reportID }, 
+      { grade: grade, description: description },
+      { returnDocument: "after" }
+    )
+
+    res.status(200).json({
+      status: "success",
+      data: "Successfully updated"//dbResponse
+    })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
