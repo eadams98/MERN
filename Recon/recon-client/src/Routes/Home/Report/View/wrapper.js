@@ -13,7 +13,7 @@ const ViewWrapper = () => {
       case "contractor":
         return <ViewContractorReport />
         break 
-      case "jr contractor":
+      case "jr. contractor":
         return <ViewJrContractorReport />
         break
       case "school":
