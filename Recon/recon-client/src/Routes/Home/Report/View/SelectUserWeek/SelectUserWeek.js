@@ -3,6 +3,7 @@ import { Col, Container, Form, FormGroup, Row, Button, FormLabel, Spinner } from
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 import _ from 'lodash'
 import useSnapshots from "../../../../../Hooks/useSnapshots";
+import Swal from "sweetalert2";
 
 const SelectUserWeek = ({userID, role, resetParent}) => {
   //Hooks
@@ -13,7 +14,6 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
   const [reportWeek, setReportWeek] = useState("")
   const [reportWeeks, setReportWeeks] = useState([])
   const [reportForm, setReportForm] = useState({})
-  const [validForm, setValidForm] = useState(false);
   const [inRevise, setInRevise] = useState(false)
   const [loading, setLoading] = useState(true)
   const GRADES = [
@@ -39,13 +39,34 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
     setReportForm((prevState) => {return { ...prevState, [name]: value }})
   }
 
-  const submitRevision = () => {
-    const send = async () => {
-      setLoading(true)
-      //const response = await axios.post(``, reportForm)
+  const submitRevision = async () => {
+    setLoading(true)
+    try {
+      const response = await axios.put(`/update-report`, reportForm)
+      const updatedSnapshot = {
+        ...snapshots.GetSnapshot('reportForm'),
+        "grade": reportForm.grade,
+        "description": reportForm.description
+      }
+      snapshots.SetSnapshot('reportForm', updatedSnapshot)
       setInRevise(false)
-      setLoading(false)
+
+      Swal.fire({
+        position: 'top',
+        icon: 'success',
+        timer: 2000,
+        text: response.data.data,
+      })
+    } catch (error) {
+      console.log(error)
+      Swal.fire({
+        position: 'top',
+        icon: 'error',
+        timer: 2000,
+        text: "SOME ERROR OCCURED"
+      })
     }
+    setLoading(false)  
   }
 
   // Effects
@@ -55,10 +76,12 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
       console.log(role)
       let response;
       const defaultContractorReportForm = {
+        reportID: "",
         grade: "",
         description: "",
       }
       const defaultJrContractorReportForm = {
+        reportID: "",
         grade: "",
         description: "",
         revision: "",
@@ -107,6 +130,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
       console.log(response)
       const updatedReportForm = {
         ...reportForm,
+        reportID: response.data._id,
         description: response.data.description,
         grade: response.data.grade,
       }
@@ -231,7 +255,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
             </Col>
             <Col md={{span: 4, offset: 2}} style={{position: "relative"}}>
               {
-                inRevise ? <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} variant="success">submit</Button> : null
+                inRevise ? <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} variant="success" onClick={submitRevision} disabled={_.isEqual(reportForm, snapshots.GetSnapshot('reportForm'))}>submit</Button> : null
               }
             </Col>
           </Row>

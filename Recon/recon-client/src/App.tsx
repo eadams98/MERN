@@ -19,6 +19,7 @@ import { userSelector } from './State/Slices/userSlice';
 import PageNotFound from './PageNotFound';
 import GenerateReport from './Routes/Home/Report/Create/GenerateNewReport';
 import ViewWrapper from './Routes/Home/Report/View/wrapper';
+import ProfileContainer from './Routes/Home/Profile/ProfileContainer';
 
 function App() {
 
@@ -49,7 +50,7 @@ function App() {
           <Route element={<Login user={user}/>} path="/" />
           <Route element={<PrivateRoutes/>}>
             <Route element={<Home/>} path="/home/" >
-              <Route path="ok" element={<div>Hello</div>}/>
+              <Route path="profile" element={<ProfileContainer/>}/>
               <Route path="report/view" element={<ViewWrapper/>}/>
               <Route path="report/create" element={<GenerateReport/>}/>
             </Route>

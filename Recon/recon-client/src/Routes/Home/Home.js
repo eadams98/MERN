@@ -30,7 +30,7 @@ function Home(props) {
             <Row style={{height: "90%", backgroundColor: "grey"}}>
               {/*<Col>HOME APP</Col>
               <Col> <Button onClick={() => navigate("ok")}> </Button> </Col>*/}
-              <Col>
+              <Col style={{ height: "100%"}}>
                 <Outlet/>
               </Col>
             </Row> 

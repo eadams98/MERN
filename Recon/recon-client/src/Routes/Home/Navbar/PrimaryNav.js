@@ -1,7 +1,8 @@
 import { attemptLogout, userSelector } from "../../../State/Slices/userSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav } from "react-bootstrap";
+import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav, CardImg } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
+import defaultProfilePicture from '../../../Default-Profile-Picture.jpeg';
 
 const PrimaryNav = ({navHeight = "10", ...restProps}) => {
   
@@ -27,15 +28,18 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
     <Row style={{height: `${navHeight}%`, backgroundColor: "blue"}}>
                   
         <Navbar variant="dark" bg="dark" style={{height: "100%", width: "100%"}}>
-          <Container>
-            <Navbar.Brand href="#home">Navbar with text</Navbar.Brand>
+          <Container style={{ height: "100%"}}>
+            <Card style={{ height: "100%", width: "10%"}}>
+              <CardImg src={user.user?.profilePicture ? user.user.profilePicture : defaultProfilePicture} style={{height: "100%", width: "100%"}}/>
+            </Card>
+            <Navbar.Brand href="#home">RECON</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Nav className="me-auto">
               <NavDropdown title="Report" id="basic-nav-dropdown">
                 <NavDropdown.Item as={Link} to={"report/view"} disabled={location.pathname === "/home/report/view"}>View</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item>
+                { user.user.role !== "JR. CONTRACTOR" ? <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item> : null }
               </NavDropdown>
-                <Nav.Link as={Link} to={"ok"} disabled={location.pathname === "/home/ok"}>Ok</Nav.Link>
+                <Nav.Link as={Link} to={"profile"} disabled={location.pathname === "/home/profile"}>Ok</Nav.Link>
               </Nav>
             <Navbar.Collapse className="justify-content-end">
               <Nav.Link as={Button} onClick={handleLogout}>Logout</Nav.Link>
