@@ -167,7 +167,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
             >
               <option value="" hidden>{reportWeeks.length > 0 ? '--select a week---' : 'No Weeks'}</option>
               {
-                reportWeeks.map( week => <option value={week}> {week} </option>)
+                reportWeeks.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
               }
             </Form.Select>
           </Col>
