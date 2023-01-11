@@ -43,6 +43,9 @@ const userSchema = new mongoose.Schema({
   access: {
     type: Array,
     default: []
+  },
+  userImage: {
+    type: String,
   }
 },
 {
