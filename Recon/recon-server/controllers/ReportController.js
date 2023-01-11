@@ -57,19 +57,27 @@ exports.createReport = async (req, res, next) => {
   }
 }
 
-exports.getMyUsers = async (req, res, next) => {
+exports.getMyUsersWithReports = async (req, res, next) => {
   try {
     const dbResponse = await ReportModel.find({ createdByUser: req.user.userID }) // make it unique. no duplicat createdForUser
-    const userList = []
+    
+    const userArray = []
+    const userIDSet = new Set()
     console.log(dbResponse)
     for (const report of dbResponse) {
-      const user = await UserController.getUserNameAndUserIDByUserID(report.createdForUser)
-      console.log("added to list")
-      userList.push(user)
+      if (!userIDSet.has(report.createdForUser)) {
+        const user = await UserController.getUserNameAndUserIDByUserID(report.createdForUser)
+
+        if (!userIDSet.has(user.userID)) {
+          userIDSet.add(user.userID)
+          userArray.push(user)
+        }
+      }
+      
     }
 
     setTimeout(()=> {
-      res.status(200).json(userList)
+      res.status(200).json(Array.from(userArray))
     }, 10000)
     
   } catch (error) {

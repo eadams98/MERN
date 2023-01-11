@@ -3,7 +3,7 @@ const UserModel = require("../models/UserModel")
 const jwt = require('jsonwebtoken');
 const Helper = require('../utilities/helper')
 const Validator = require('../utilities/validator')
-const ErrorMapping = require('../utilities/errorMapping')
+const ErrorMapping = require('../utilities/errorMapping');
 
 let refreshTokens = [] // possibly many users, so this will hold
 const schemaName = 'users'
@@ -86,7 +86,7 @@ exports.login = async (req, res, next) => {
   try {
     const dbResponse = await UserModel.findOne(
       { emailID: email, password: password },
-      { name: 1,  role: 1, access: 1, userID: 1 }
+      { name: 1,  role: 1, access: 1, userID: 1, userImage: 1 }
     )
 
     if (dbResponse) {
@@ -94,6 +94,15 @@ exports.login = async (req, res, next) => {
       const accessToken = jwt.sign({ userID: dbResponse.userID, role: dbResponse.role, access: dbResponse.access, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
       const refreshToken = jwt.sign( dbResponse.toJSON(), process.env.REFRESH_TOKEN_SECRET )
       refreshTokens.push(refreshToken)
+
+      let PORT;
+      process.env.STATUS == 'production' ?
+        PORT = process.env.PROD_PORT :
+        PORT = process.env.DEV_PORT
+      const profileURL = dbResponse?.userImage ? 
+        `http://localhost:${PORT}/${dbResponse.userImage}` :
+        ""
+
       res.status(200).json({
         status: "success",
         data: {
@@ -102,7 +111,8 @@ exports.login = async (req, res, next) => {
           name: dbResponse.name,
           ID: dbResponse.userID,
           role: dbResponse.role,
-          access: dbResponse.access
+          access: dbResponse.access,
+          profilePicture: profileURL
         }
       })
       return
@@ -142,6 +152,102 @@ exports.logout = async (req, res, next) => {
   
 }
 
+exports.getProfile = async (req, res, next) => {
+  try {
+    const myProfile = await UserModel.findOne({ userID: req.user.userID})
+    const returnData = { 
+      name: { first: myProfile.name.first, last: myProfile.name.last },
+      email: myProfile.emailID,
+      role: myProfile.role
+    }
+
+    switch(req.user.role) {
+      case "CONTRACTOR":
+        const jrContractors = []
+        const regex = /^JR-CONTRACTOR-[0-9]{3,}$/
+        for (const userID of myProfile.connections) {
+          try {
+            let user = await UserModel.findOne({ userID: userID}, { name: 1, emailID: 1, connections: 1 })
+            if (user) {
+              const schoolID = user.connections.find(userID => /^SCHOOL-[0-9]{3,}$/.test(userID))
+              let school
+              if (schoolID) { school = await UserModel.findOne({ userID: schoolID }, { name: 1 }) }
+              jrContractors.push({ name: `${user.name.first} ${user.name.last}`, email: user.emailID, school: school ? `${school.name.first} ${school.name.first}` : `no school` , avgGrade: "N/A" })
+            }
+          } catch (error) {
+            // pass
+          }
+        }
+        returnData.connections = jrContractors
+        break
+      case "JR. CONTRACTOR":
+        const contractors = []
+        for (const userID of myProfile.connections) {
+          try {
+            if (/^CONTRACTOR-[0-9]{3,}$/.test(userID)) {
+              let user = await UserModel.findOne({ userID: userID}, { name: 1, emailID: 1 })
+              contractors.push({ name: `${user.name.first} ${user.name.last}`, email: user.emailID, avgRating: "N/A" })
+            }
+          } catch (error) {
+            // pass
+          }
+        }
+        break
+      default:
+
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: returnData
+    })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
+
+exports.updateProfile = async (req, res, next) => {
+  const { email, name } = req.body
+  if (Helper.isMissingParams({"name": name, "email": email}, next)) {
+    return 
+  }
+
+  const { first, last } = req.body.name
+  if (Helper.isMissingParams({"first": first, "last": last}, next)) {
+    return 
+  }
+
+  try {
+    const failedValidattions = []
+    if (!(await Validator.isValidEmail(email))) {
+      failedValidattions.push(ErrorMapping.validator.email + ". ")
+    }
+    if ( !Validator.isValidName(name) ) {
+      failedValidattions.push(ErrorMapping.validator.name)
+    }
+
+    if (failedValidattions.length > 0) {
+      res.status(400).json({
+        status: "fail",
+        message: `please fix these ${failedValidattions}`
+      })
+      return
+    }
+
+    const dbResponse = await UserModel.findOneAndUpdate( {userID: req.user.userID}, { $set: { name: name, emailID: email } }, {
+      returnNewDocument: true
+  } )
+    console.log(req.user.userID)
+
+    res.status(200).json({
+      status: 'success',
+      data: 'successfully updated'
+    })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
+
 exports.checkRefreshTokenAndGenerateNewAccessToken = async (req, res, next) => {
   const { token }  = req.body
   if (Helper.isMissingParams({"token": token}, next)) {
@@ -178,6 +284,22 @@ exports.checkRefreshTokenAndGenerateNewAccessToken = async (req, res, next) => {
     } 
   });
   
+}
+
+exports.uploadProfilePicture = async (req, res, next) => {
+  console.log(req.file)
+  try {
+    await UserModel.findOneAndUpdate(
+      { userID: req.user.userID },
+      { $set: {  userImage: req.file.path } }
+    )
+    res.status(200).json({
+      status: 'success',
+      data: 'picture successfully uploaded'
+    })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
 }
 
 exports.addConnectionToSelf = async (req, res, next) => { // should only be used by school, contractor, council
@@ -233,6 +355,27 @@ exports.getMyConnections = async (req, res, next) => {
       status: 'status',
       data: dbResponse.connections
     })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
+
+exports.getMyJrContractors = async (req, res, next) => {
+  try {
+    const dbResponse = await UserModel.findOne({ userID: req.user.userID}, { connections: 1, _id: 0 })
+    const regex = /^JR-CONTRACTOR-[0-9]{3,}$/
+    const responseData = []
+
+    for (const connection of dbResponse.connections) {
+      let user
+      if (regex.test(connection)) {
+        user = await UserModel.findOne({ userID: connection }, { _id: 0, name: 1, userID: 1, emailID: 1 })
+        console.log(user)
+        if (user) { responseData.push({ userID: user.userID, name: `${user.name.first} ${user.name.last}`, email: user.emailID }) }
+      }
+    }
+    console.log(responseData)
+    res.status(200).json(responseData)
   } catch (error) {
     next(Helper.generateError(400, error.message))
   }

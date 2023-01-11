@@ -21,13 +21,14 @@ exports.isUniqueEmail = async (email) => {
 }
 
 exports.isValidName = (name) => { 
-  if (!name?.first && !name?.last) { 
-    return false
-  }
-  if (name?.length >= 3 && name?.length <= 50) {
+  if ( 
+    name?.first && name?.last &&
+    (name.first.length >= 3 && name.first?.length <= 50) && 
+    (name?.last?.length >= 3 && name?.last?.length <= 50) 
+  ) {
     return true
   }
-  return true
+  return false
 }
 
 exports.isValidPassword = (password) => {
