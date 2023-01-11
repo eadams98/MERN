@@ -111,7 +111,7 @@ const ProfileForm = () => {
     setProfileModal(false)
   }
 
-  if(loading) { return<Spinner /> }
+  if(loading) { return <div style={{width: "100%"}}><Spinner /></div>}
   else {return (
     <> 
       <ProfileUploadModal closeModal={closeModal} showProfileModal={profileModal}/>

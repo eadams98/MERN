@@ -39,7 +39,7 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
                 <NavDropdown.Item as={Link} to={"report/view"} disabled={location.pathname === "/home/report/view"}>View</NavDropdown.Item>
                 { user.user.role !== "JR. CONTRACTOR" ? <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item> : null }
               </NavDropdown>
-                <Nav.Link as={Link} to={"profile"} disabled={location.pathname === "/home/profile"}>Ok</Nav.Link>
+                <Nav.Link as={Link} to={"profile"} disabled={location.pathname === "/home/profile"}>Profile</Nav.Link>
               </Nav>
             <Navbar.Collapse className="justify-content-end">
               <Nav.Link as={Button} onClick={handleLogout}>Logout</Nav.Link>
