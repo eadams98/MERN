@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Col, Container, Form, FormGroup, Row, Button, FormLabel, Spinner } from "react-bootstrap"
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 
-const SelectUser = ({setUserIDInParent, setIsLoadingInParent}) => {
+const SelectUser = ({setUserIDInParent, axiosURL}) => {
 
   const [myUsers, setMyUsers] = useState([])
   const axios = useAxiosPersonal()
@@ -11,7 +11,7 @@ const SelectUser = ({setUserIDInParent, setIsLoadingInParent}) => {
   useEffect(()=> {
     const getMyUsers = async () => {
       setLoading(true)
-      const response = await axios.get("get-my-users")
+      const response = await axios.get(axiosURL)
       console.log(response)
       setMyUsers(response.data)
       setLoading(false)

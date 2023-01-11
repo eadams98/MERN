@@ -1,4 +1,5 @@
 import { useState } from "react"
+import _ from 'lodash'
 
 const useSnapshots = () => { 
 
@@ -10,7 +11,11 @@ const useSnapshots = () => {
 
   const GetSnapshots = () => { return snapshots }
 
-  return { SetSnapshot, GetSnapshot, GetSnapshots }
+  const Validate = (object, snapshotName) => {
+    return _.isEqual(object, snapshots[snapshotName])
+  }
+
+  return { SetSnapshot, GetSnapshot, GetSnapshots, Validate }
 }
 
 export default useSnapshots;

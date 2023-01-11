@@ -38,7 +38,7 @@ const ViewContractorReport = () => {
         <Col> {/* <Col className='h-75'> */}
         
           { 
-            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent}/> : null
+            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent} axiosURL="get-my-users-with-reports"/> : null
           }
 
           { 
