@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Button, Card, Col, Container, Form, Modal, Row, Spinner, Table } from "react-bootstrap"
+import { Button, Card, Col, Container, Form, Modal, OverlayTrigger, Row, Spinner, Table, Tooltip } from "react-bootstrap"
 import { useSelector } from "react-redux"
 import useAxiosPersonal from "../../../Hooks/useAxiosPersonal"
 import useSnapshots from "../../../Hooks/useSnapshots"
@@ -121,11 +121,16 @@ const ProfileForm = () => {
           {/* left half. Picture */}
           <Col style={{height: "100%", display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
             <Card style={{ height: "80%", width: "80%"}}>
-              <Card.Img 
-                onClick={() => {setProfileModal(true); console.log(profileModal)}}
-                style={{ width: "100%", height: "100%"}}
-                src={ user?.user?.profilePicture ? user.user.profilePicture : defaultProfilePicture}
-              />
+              <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Click to upload photo</Tooltip>}
+                >
+                  <Card.Img 
+                    onClick={() => {setProfileModal(true); console.log(profileModal)}}
+                    style={{ width: "100%", height: "100%"}}
+                    src={ user?.user?.profilePicture ? user.user.profilePicture : defaultProfilePicture}
+                  />
+                </OverlayTrigger>
             </Card>
           </Col>
           

@@ -5,6 +5,7 @@ import {
   Route,
   Router,
     Routes,
+    useLocation,
     useNavigate
   } from "react-router-dom";
 //import LoginService from "../Services/LoginService";
@@ -20,7 +21,7 @@ function Home(props) {
     const [userForm, setUserForm] = useState({ name: "eric", password: ""});
     const [userErrorForm, setUserErrorForm] = useState({ name: "", password: ""});
     const navigate = useNavigate();
-
+    const location = useLocation();
 
     return (
         
@@ -31,7 +32,15 @@ function Home(props) {
               {/*<Col>HOME APP</Col>
               <Col> <Button onClick={() => navigate("ok")}> </Button> </Col>*/}
               <Col style={{ height: "100%"}}>
-                <Outlet/>
+                {
+                  location.pathname === "/home" ?
+                    <div style={{width: "100%", height: "100%", border: "solid red", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <label>RECON</label>
+                    </div>
+                    :
+                    <Outlet/>
+                }
+                
               </Col>
             </Row> 
         </Container>

@@ -32,15 +32,17 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
             <Card style={{ height: "100%", width: "10%"}}>
               <CardImg src={user.user?.profilePicture ? user.user.profilePicture : defaultProfilePicture} style={{height: "100%", width: "100%"}}/>
             </Card>
-            <Navbar.Brand href="#home">RECON</Navbar.Brand>
+            <Navbar.Brand as={Link} to={"/home"} >RECON</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Nav className="me-auto">
               <NavDropdown title="Report" id="basic-nav-dropdown">
                 <NavDropdown.Item as={Link} to={"report/view"} disabled={location.pathname === "/home/report/view"}>View</NavDropdown.Item>
-                { user.user.role !== "JR. CONTRACTOR" ? <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item> : null }
+                { user.user.role !== "JR. CONTRACTOR" && user.user.role !== "SCHOOL" ? <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item> : null }
               </NavDropdown>
                 <Nav.Link as={Link} to={"profile"} disabled={location.pathname === "/home/profile"}>Profile</Nav.Link>
-              </Nav>
+                { user.user.role === "SCHOOL" || user.user.role !== "COUNCIL" ? <Nav.Link as={Link} to={"/home/connections"} disabled={location.pathname === "/home/connections"}>Connections</Nav.Link> : null }
+                <Nav.Link as={Link} to={"sample"} disabled={location.pathname === "/home/sample"}>Sample</Nav.Link>
+            </Nav>
             <Navbar.Collapse className="justify-content-end">
               <Nav.Link as={Button} onClick={handleLogout}>Logout</Nav.Link>
               <Navbar.Text>
