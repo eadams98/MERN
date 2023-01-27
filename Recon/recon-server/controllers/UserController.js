@@ -91,7 +91,7 @@ exports.login = async (req, res, next) => {
 
     if (dbResponse) {
       dbResponse.exp = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7)
-      const accessToken = jwt.sign({ userID: dbResponse.userID, role: dbResponse.role, access: dbResponse.access, exp: Math.floor(Date.now() / 1000) + 60 }, process.env.ACCESS_TOKEN_SECRET )
+      const accessToken = jwt.sign({ userID: dbResponse.userID, role: dbResponse.role, access: dbResponse.access, exp: Math.floor(Date.now() / 1000) + 300 }, process.env.ACCESS_TOKEN_SECRET )
       const refreshToken = jwt.sign( dbResponse.toJSON(), process.env.REFRESH_TOKEN_SECRET )
       refreshTokens.push(refreshToken)
 
@@ -303,7 +303,7 @@ exports.uploadProfilePicture = async (req, res, next) => {
 }
 
 exports.addConnectionToSelf = async (req, res, next) => { // should only be used by school, contractor, council
-  const { userIDToAdd } = req.body;
+  const { userIDToAdd, contractorID } = req.body;
   if (Helper.isMissingParams({"userIDToAdd": userIDToAdd}, next)) {
     return 
   }
@@ -318,7 +318,7 @@ exports.addConnectionToSelf = async (req, res, next) => { // should only be used
       }
       /*
       1. if not already in each others connection list
-      2. 
+      2. if JR. CONTRACTOR, then make sure you are the only SCHOOL/CONTRACTOR
       */
     }
   
@@ -330,19 +330,76 @@ exports.addConnectionToSelf = async (req, res, next) => { // should only be used
       return
     }
 
-    let dbResponse = await UserModel.findOneAndUpdate(
-      {userID: req.user.userID},
-      {$push: {connections: userIDToAdd}}
-    )
-    dbResponse = await UserModel.findOneAndUpdate(
-      {userID: userIDToAdd},
-      {$push: {connections: req.user.userID}}
-    )
+    if (req.user.role === "CONTRACTOR") {
+      // check to make sure userIDToAdd is of role JR. CONTRACTOR
+      // check to make sure user doesn't already belong to contractor
+      let dbResponse = await UserModel.findOneAndUpdate(
+        {userID: req.user.userID},
+        {$push: {connections: userIDToAdd}}
+      )
+      dbResponse = await UserModel.findOneAndUpdate(
+        {userID: userIDToAdd},
+        {$push: {connections: req.user.userID}}
+      )
+      res.status(200).json({
+        status: "success",
+        data: "connection added"
+      })
+    } else if (req.user.role === "SCHOOL") {
+      // check to make sure userIDToAdd is of role JR. CONTRACTOR
+      let user = await UserModel.findOne({userID: userIDToAdd})
+      if (user.role != "JR. CONTRACTOR") {
+        return res.status(400).json({
+          status: "fail",
+          data: "Trying to add a non jr. contractor user to yourself."
+        })
+      }
+      // check to make sure user doesn't already belong to school or self
+      if (user.connections.find(uID => /^SCHOOL-[0-9]{3,}$/.test(uID))) {
+        return res.status(400).json({
+          status: "fail",
+          data: "jr. contractor already belongs to a school"
+        })
+      }
 
-    res.status(200).json({
-      status: "success",
-      data: "connection added"
-    })
+      if (contractorID) {
+        console.log("OK CONTRACTOR")
+        if (!/^CONTRACTOR-[0-9]{3,}$/.test(contractorID)) {
+          return res.status(400).json({
+            status: "fail",
+            data: "Provided an invalid contractor ID"
+          })
+        }
+        if ( !await UserModel.findOne({userID: contractorID}) ) {
+          return res.status(400).json({
+            status: "fail",
+            data: "contractor doesn't exist"
+          })
+        }
+
+        let contractor = await UserModel.findOneAndUpdate( // add jr to contractor
+          {userID: contractorID},
+          {$push: {connections: userIDToAdd}}
+        )
+        contractor = await UserModel.findOneAndUpdate( // add jr to contractor
+        {userID: userIDToAdd},
+        {$push: {connections: contractorID}}
+      )
+      }
+
+      let dbResponse = await UserModel.findOneAndUpdate( // add jr to school(self)
+        {userID: req.user.userID},
+        {$push: {connections: userIDToAdd}}
+      )
+      dbResponse = await UserModel.findOneAndUpdate( // add school(self) to jr
+        {userID: userIDToAdd},
+        {$push: {connections: req.user.userID}}
+      )
+      res.status(200).json({
+        status: "success",
+        data: "connection added"
+      })
+    }
   } catch (error) {
     next(Helper.generateError(400, error.message))
   }
@@ -389,5 +446,50 @@ exports.getUserNameAndUserIDByUserID = async (userID) => {
     return userWithIDandName
   } catch (error) {
     return "error"
+  }
+}
+
+// School specific
+exports.getSchoolStudents = async (req, res, next) => {
+  try {
+    const RECORDS_PER_PAGE = 1
+    const dbResponse = await UserModel.findOne({userID: req.user.userID}, {_id: 0, connections: 1});
+    
+    const noOfPages = Math.ceil(dbResponse.connections.length / RECORDS_PER_PAGE)
+    if (req.body?.currentPage && req.body.currentPage > noOfPages) {
+      return next(Helper.generateError(400, "Outside of Page limit"))
+    }
+
+    const userList = []
+    for(let idx = req.body?.currentPage ? (req.body?.currentPage - 1)*RECORDS_PER_PAGE : 0 ; idx < dbResponse.connections.length; idx++) {
+      console.log(idx)
+      const userID = dbResponse.connections[idx]
+      let user = await UserModel.findOne({userID: userID})
+      let format = {
+        name: `${user.name.first} ${user.name.last}`,
+        email: user.emailID,
+      }
+
+      const bossID = user.connections.find( uID => /^CONTRACTOR-[0-9]{3,}$/.test(uID)) // should only have 1 contractor at a time.
+      if (bossID) {
+        user = await UserModel.findOne({userID: bossID})
+        format.boss = `${user.name.first} ${user.name.last}`
+        format["boss email"] = user.emailID
+      }
+      userList.push(format)
+      if (userList.length == RECORDS_PER_PAGE)
+        break
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        pages: noOfPages,
+        currentPage: req.body?.currentPage ? req.body.currentPage : 1,
+        list: userList
+      }
+    })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
   }
 }
