@@ -36,6 +36,7 @@ const tokenChecker = require('../middlewares/tokenChecker');
 // routes
 routing.get("/get-my-connections", tokenChecker, UserController.getMyConnections)
 routing.get("/get-profile", tokenChecker, UserController.getProfile)
+routing.get("/get-school-students", tokenChecker, UserController.getSchoolStudents);
 routing.put("/update-profile", tokenChecker, UserController.updateProfile)
 routing.post("/login", UserController.login)
 routing.post("/register", tokenChecker, UserController.register)
