@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Button, Col, Container, Row } from "react-bootstrap"
 import styles from "../../../CSS/Modules/Button.module.css"
 import ExcelLikeTable from "../../../Utilities/ExcelLikeTable";
+import AddConnections from "./AddConnections/AddConnections";
 
 const ConnectionsContainers = () => {
 
@@ -27,18 +28,13 @@ const ConnectionsContainers = () => {
           {
             tab === "add" ?
               (
-                <Container style={{border: "solid red"}}>
-                  <Row style={{border: "solid green"}}><Col>{tab}</Col><Col><select/></Col></Row>
-                  <Row style={{border: "solid green"}}><Col>Student</Col><Col><select/></Col></Row>
-                  <Row style={{border: "solid black"}}><Col>Contractor</Col><Col><select/></Col></Row>
-                  <Row style={{border: "solid green"}}><Col><Button>Submit</Button></Col></Row>
-                </Container>
+                <AddConnections />
               )
               :
               (
                 <Container style={{border: "solid red", display: "flex", justifyContent: "center", alignItems: "center"}}>
                   <Row style={{height: "90%", width: "100%", border: "solid yellow"}}>
-                    <ExcelLikeTable />
+                    <ExcelLikeTable tableName="current connections" />
                   </Row>
                 </Container>
               )

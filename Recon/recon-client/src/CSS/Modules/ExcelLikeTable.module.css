@@ -6,7 +6,16 @@
   width: 98%;*/
   margin: auto;
   border:solid;
- 
+  height: 100%;
+  overflow: auto;
+}
+
+.excelContainerPagination {
+  /*height: 50%;
+  width: 98%;*/
+  margin: auto;
+  border:solid;
+  height: 90%;
   overflow: auto;
 }
 

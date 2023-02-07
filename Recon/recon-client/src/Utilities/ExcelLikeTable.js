@@ -4,9 +4,13 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import React, { useEffect, useState, forwardRef, useImperativeHandle} from "react"
 import { Button, Form, Col, Row, Alert, Card, Modal, ModalBody, ModalFooter, Container, InputGroup, FormControl} from 'react-bootstrap';
 import styleTest from '../CSS/Modules/ExcelLikeTable.module.css';
+import useAxiosPersonal from "../Hooks/useAxiosPersonal";
 //import swal from "sweetalert";
 
 const ExcelLikeTable = forwardRef((props, ref) => {
+    // Hooks
+    const axios = useAxiosPersonal()
+
     let data = []
     const [tableSort, setTableSort] = useState([true, true, true, true, true])
     const [selectedColumn, setSelectedColumn] = useState("")
@@ -131,41 +135,351 @@ const ExcelLikeTable = forwardRef((props, ref) => {
     }
 
     // PAGINATION START
-    let totalPageCalculate = (listLength) => {
-        let totalPages = 0;
-        if (listLength === 0) {
-            totalPages = 1;
-        }
-        else if (listLength % pagination.tableSize === 0) {
-            totalPages = (listLength / pagination.tableSize)
-            console.log("1")
-        }
-        else {
-            totalPages = Math.floor(listLength / pagination.tableSize) + 1
-            console.log("2")
-        }
-        return totalPages;
-    }
-    let previousPage = () => { setPagination({  ...pagination, currentPage: pagination.currentPage - 1, arrayPage: pagination.arrayPage - 1 }) }
 
-    let nextPage = () => { setPagination({  ...pagination, currentPage: pagination.currentPage + 1, arrayPage: pagination.arrayPage + 1 }) }
+    let previousPage = async () => { 
+      try {
+        let resp = await axios.get('get-school-students', {
+          params: {
+            currentPage: pagination.currentPage - 1
+          }
+        })
+        resp = resp.data
+        console.log(resp.data, resp.data.pages)
+
+        setPagination({
+          currentPage: resp.data.currentPage,
+          //arrayPage: 0,
+          totalPages: resp.data.pages,
+          tableSize: 20
+      })
+
+        let rows = []
+        let tableFilter = []
+        let tableSet = []
+        let tableSearch =[]
+        let headerNames = []
+        let tableSort = []
+
+        if (resp.data.list.length != 0) {
+            Object.entries(resp.data.list?.[0]).map((entry) => {
+                let [key, value] = entry;
+                headerNames.push(key)
+                tableSort.push(true)
+            })
+        }
+
+        console.log(resp.data.list)
+        resp.data.list.map((rowData) => {
+            
+            let row = new Array()
+            let aTableFilter = new Object()
+            let aTableSet = new Set()
+            
+            Object.entries(rowData).map((entry) => {
+                
+                let [key, value] = entry;
+                console.log(rowData)
+
+                row.push(value)
+                aTableFilter[value] = true
+                //tableSet.push( new Set([rowData]) )
+                //tableSearch.push("")
+            })
+            rows.push(row)
+            tableFilter.push(aTableFilter)
+            tableSet.push( new Set(row) )
+            tableSearch.push("")
+            
+        })
+
+        let selectAllList = []
+        let selectAllListForFilter = {}
+        headerNames.map((headerName, idx) =>{
+            selectAllList.push("Select All " + headerName)
+            selectAllListForFilter["Select All " + headerName] = true
+        })
+        rows.push(selectAllList)
+        tableFilter.push(selectAllListForFilter)
+        tableSet.push( new Set(["Set All"]) )
+
+        console.log(rows, tableFilter, tableSet, tableSearch)
+
+        setTable({
+            head: headerNames,
+            body: rows
+        })
+        setTableSort(tableSort)
+        setDisplayTable(rows)
+        setTableSet(tableSet)
+        setTableFilter(tableFilter)
+        setTableSearch(tableSearch)
+        
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    let nextPage = async () => { 
+      //setPagination({  ...pagination, currentPage: pagination.currentPage + 1, arrayPage: pagination.arrayPage + 1 })
+      console.log(`type of: ${typeof pagination.currentPage}`)
+      try {
+        let resp = await axios.get('get-school-students', {
+          params: {
+            currentPage: pagination.currentPage + 1
+          }
+        })
+        resp = resp.data
+        console.log(resp.data, resp.data.pages)
+
+        setPagination({
+          currentPage: resp.data.currentPage,
+          //arrayPage: 0,
+          totalPages: resp.data.pages,
+          tableSize: 20
+      })
+
+        let rows = []
+        let tableFilter = []
+        let tableSet = []
+        let tableSearch =[]
+        let headerNames = []
+        let tableSort = []
+
+        if (resp.data.list.length != 0) {
+            Object.entries(resp.data.list?.[0]).map((entry) => {
+                let [key, value] = entry;
+                headerNames.push(key)
+                tableSort.push(true)
+            })
+        }
+
+        console.log(resp.data.list)
+        resp.data.list.map((rowData) => {
+            
+            let row = new Array()
+            let aTableFilter = new Object()
+            let aTableSet = new Set()
+            
+            Object.entries(rowData).map((entry) => {
+                
+                let [key, value] = entry;
+                console.log(rowData)
+
+                row.push(value)
+                aTableFilter[value] = true
+                //tableSet.push( new Set([rowData]) )
+                //tableSearch.push("")
+            })
+            rows.push(row)
+            tableFilter.push(aTableFilter)
+            tableSet.push( new Set(row) )
+            tableSearch.push("")
+            
+        })
+
+        let selectAllList = []
+        let selectAllListForFilter = {}
+        headerNames.map((headerName, idx) =>{
+            selectAllList.push("Select All " + headerName)
+            selectAllListForFilter["Select All " + headerName] = true
+        })
+        rows.push(selectAllList)
+        tableFilter.push(selectAllListForFilter)
+        tableSet.push( new Set(["Set All"]) )
+
+        console.log(rows, tableFilter, tableSet, tableSearch)
+
+        setTable({
+            head: headerNames,
+            body: rows
+        })
+        setTableSort(tableSort)
+        setDisplayTable(rows)
+        setTableSet(tableSet)
+        setTableFilter(tableFilter)
+        setTableSearch(tableSearch)
+        
+      } catch (error) {
+        console.log(error)
+      }
+      
+    }
 
     let indexPage = (pageNumber) => {
         setPagination({  ...pagination, currentPage: pageNumber, arrayPage: pageNumber-1  })
     }
 
-    let changePage = (e) => {
+    let changePage = async () => {
         //console.log(e.target.value)
-        if (e.target.value == "") {
-            setPagination({...pagination, currentPage: e.target.value, arrayPage: 0})
-        } else if (e.target.value <= pagination.totalPages && e.target.value > 0) {
-            setPagination({...pagination, currentPage: e.target.value, arrayPage: e.target.value-1})
+        if (pagination.currentPage <= pagination.totalPages && pagination.currentPage > 0) {
+          try {
+            let resp = await axios.get('get-school-students', {
+              params: {
+                currentPage: pagination.currentPage
+              }
+            })
+            resp = resp.data
+            console.log(resp.data, resp.data.pages)
+    
+            setPagination({
+              currentPage: resp.data.currentPage,
+              //arrayPage: 0,
+              totalPages: resp.data.pages,
+              tableSize: 20
+          })
+    
+            let rows = []
+            let tableFilter = []
+            let tableSet = []
+            let tableSearch =[]
+            let headerNames = []
+            let tableSort = []
+    
+            if (resp.data.list.length != 0) {
+                Object.entries(resp.data.list?.[0]).map((entry) => {
+                    let [key, value] = entry;
+                    headerNames.push(key)
+                    tableSort.push(true)
+                })
+            }
+    
+            console.log(resp.data.list)
+            resp.data.list.map((rowData) => {
+                
+                let row = new Array()
+                let aTableFilter = new Object()
+                let aTableSet = new Set()
+                
+                Object.entries(rowData).map((entry) => {
+                    
+                    let [key, value] = entry;
+                    console.log(rowData)
+    
+                    row.push(value)
+                    aTableFilter[value] = true
+                    //tableSet.push( new Set([rowData]) )
+                    //tableSearch.push("")
+                })
+                rows.push(row)
+                tableFilter.push(aTableFilter)
+                tableSet.push( new Set(row) )
+                tableSearch.push("")
+                
+            })
+    
+            let selectAllList = []
+            let selectAllListForFilter = {}
+            headerNames.map((headerName, idx) =>{
+                selectAllList.push("Select All " + headerName)
+                selectAllListForFilter["Select All " + headerName] = true
+            })
+            rows.push(selectAllList)
+            tableFilter.push(selectAllListForFilter)
+            tableSet.push( new Set(["Set All"]) )
+    
+            console.log(rows, tableFilter, tableSet, tableSearch)
+    
+            setTable({
+                head: headerNames,
+                body: rows
+            })
+            setTableSort(tableSort)
+            setDisplayTable(rows)
+            setTableSet(tableSet)
+            setTableFilter(tableFilter)
+            setTableSearch(tableSearch)
+            
+          } catch (error) {
+            console.log(error)
+          }
         } else {
-            /*swal("Error",`enter a valid page number 1-${pagination.totalPages}`,"error", {
+          try {
+            let resp = await axios.get('get-school-students', {
+              params: {
+                currentPage: 1
+              }
+            })
+            resp = resp.data
+            console.log(resp.data, resp.data.pages)
+    
+            setPagination({
+              currentPage: resp.data.currentPage,
+              //arrayPage: 0,
+              totalPages: resp.data.pages,
+              tableSize: 20
+          })
+    
+            let rows = []
+            let tableFilter = []
+            let tableSet = []
+            let tableSearch =[]
+            let headerNames = []
+            let tableSort = []
+    
+            if (resp.data.list.length != 0) {
+                Object.entries(resp.data.list?.[0]).map((entry) => {
+                    let [key, value] = entry;
+                    headerNames.push(key)
+                    tableSort.push(true)
+                })
+            }
+    
+            console.log(resp.data.list)
+            resp.data.list.map((rowData) => {
+                
+                let row = new Array()
+                let aTableFilter = new Object()
+                let aTableSet = new Set()
+                
+                Object.entries(rowData).map((entry) => {
+                    
+                    let [key, value] = entry;
+                    console.log(rowData)
+    
+                    row.push(value)
+                    aTableFilter[value] = true
+                    //tableSet.push( new Set([rowData]) )
+                    //tableSearch.push("")
+                })
+                rows.push(row)
+                tableFilter.push(aTableFilter)
+                tableSet.push( new Set(row) )
+                tableSearch.push("")
+                
+            })
+    
+            let selectAllList = []
+            let selectAllListForFilter = {}
+            headerNames.map((headerName, idx) =>{
+                selectAllList.push("Select All " + headerName)
+                selectAllListForFilter["Select All " + headerName] = true
+            })
+            rows.push(selectAllList)
+            tableFilter.push(selectAllListForFilter)
+            tableSet.push( new Set(["Set All"]) )
+    
+            console.log(rows, tableFilter, tableSet, tableSearch)
+    
+            setTable({
+                head: headerNames,
+                body: rows
+            })
+            setTableSort(tableSort)
+            setDisplayTable(rows)
+            setTableSet(tableSet)
+            setTableFilter(tableFilter)
+            setTableSearch(tableSearch)
+            
+          } catch (error) {
+            console.log(error)
+          }
+        }
+        /*else {
+            swal("Error",`enter a valid page number 1-${pagination.totalPages}`,"error", {
                 buttons: false,
                 timer: 2000
-            })*/
-        }
+            })
+        }*/
         
     }
     // PAGINATION END
@@ -214,13 +528,13 @@ const ExcelLikeTable = forwardRef((props, ref) => {
         )
 
         //update Pagination
-        let totalPage = totalPageCalculate(updatedDisplay.length); 
-        console.log("total page", totalPage)
-        setPagination({
+        //let totalPage = totalPageCalculate(updatedDisplay.length); 
+        //console.log("total page", totalPage)
+        /*setPagination({
             ...pagination,
             totalPages: totalPage,
             currentPage: 1
-        })
+        })*/
         
     }, [tableSearch, tableFilter])
 
@@ -237,13 +551,90 @@ const ExcelLikeTable = forwardRef((props, ref) => {
     }, [table])
 
     useEffect(() => {
-        console.log("ONLY ONCE")
-
-        setEditMode(props.editMode)
-        console.log(editMode)
-
+      console.log("ONLY ONCE")
+      const getTableData = async () => {
         if (props?.tableName) {
             console.log("prop for table name is: " + props.tableName)
+            switch(props.tableName) {
+              case "current connections":
+                try {
+                  let resp = await axios.get('get-school-students')
+                  resp = resp.data
+                  console.log(resp.data, resp.data.pages)
+
+                  setPagination({
+                    currentPage: resp.data.currentPage,
+                    //arrayPage: 0,
+                    totalPages: resp.data.pages,
+                    tableSize: 20
+                })
+
+                  let rows = []
+                  let tableFilter = []
+                  let tableSet = []
+                  let tableSearch =[]
+                  let headerNames = []
+                  let tableSort = []
+
+                  if (resp.data.list.length != 0) {
+                      Object.entries(resp.data.list?.[0]).map((entry) => {
+                          let [key, value] = entry;
+                          headerNames.push(key)
+                          tableSort.push(true)
+                      })
+                  }
+
+                  console.log(resp.data.list)
+                  resp.data.list.map((rowData) => {
+                      
+                      let row = new Array()
+                      let aTableFilter = new Object()
+                      let aTableSet = new Set()
+                      
+                      Object.entries(rowData).map((entry) => {
+                          
+                          let [key, value] = entry;
+                          console.log(rowData)
+
+                          row.push(value)
+                          aTableFilter[value] = true
+                          //tableSet.push( new Set([rowData]) )
+                          //tableSearch.push("")
+                      })
+                      rows.push(row)
+                      tableFilter.push(aTableFilter)
+                      tableSet.push( new Set(row) )
+                      tableSearch.push("")
+                      
+                  })
+
+                  let selectAllList = []
+                  let selectAllListForFilter = {}
+                  headerNames.map((headerName, idx) =>{
+                      selectAllList.push("Select All " + headerName)
+                      selectAllListForFilter["Select All " + headerName] = true
+                  })
+                  rows.push(selectAllList)
+                  tableFilter.push(selectAllListForFilter)
+                  tableSet.push( new Set(["Set All"]) )
+
+                  console.log(rows, tableFilter, tableSet, tableSearch)
+
+                  setTable({
+                      head: headerNames,
+                      body: rows
+                  })
+                  setTableSort(tableSort)
+                  setDisplayTable(rows)
+                  setTableSet(tableSet)
+                  setTableFilter(tableFilter)
+                  setTableSearch(tableSearch)
+                  
+                } catch (error) {
+                  console.log(error)
+                }
+                break;
+            }
 
         } else {
             console.log("prop doesn't exist")
@@ -252,6 +643,11 @@ const ExcelLikeTable = forwardRef((props, ref) => {
               body: []
             })
         }
+      }
+
+      setEditMode(props.editMode)
+      console.log(editMode)
+      getTableData()
 
     }, [])
 
@@ -1401,7 +1797,7 @@ const ExcelLikeTable = forwardRef((props, ref) => {
                     <>
                       {props?.useTitle ? <div style={{fontSize: "36px", width: props.width+"%", textAlign: "center"}}>  {mapTableNameToProperTitle(props.tableName)} </div> : null}
                       {console.log(table.body.length, table.body)}
-                      <div className={styleTest.excelContainer} style={table.body.length == 1 ? {width: props.width + "%", height: 100 + "%"/*, display: "flex", alignItems: "center"*/} : {width: props.width + "%", height: 100 + "%"}}>
+                      <div className={pagination.totalPages == 1 ? styleTest.excelContainer : styleTest.excelContainerPagination} style={table.body.length == 1 ? {width: props.width + "%"/*, display: "flex", alignItems: "center"*/} : {width: props.width + "%"}}>
                           <table className={styleTest.excelSheet} style={{ background: "white" }}>
                               {props.tableName == "WorkExpReport" ? DefaultTable() : null}
                               {props.tableName == "employeeDetailReport" ? DefaultTable() : null /* NEED HELP TO FIND ACCEPTABLE FORMAT*/}
@@ -1414,6 +1810,8 @@ const ExcelLikeTable = forwardRef((props, ref) => {
                               {props.tableName == "primarySkills" ? primaryTaskTable() : null}
                               {props.tableName == "projects" ? projectTable() : null}
                               {props.tableName == "podHistory" ?  DefaultTable() : null}
+
+                              {props.tableName == "current connections" ? DefaultTable() : null}
                               {props.tableName == null ? DefaultTable() : null}
                           </table>
                       </div>
@@ -1453,16 +1851,19 @@ const ExcelLikeTable = forwardRef((props, ref) => {
                           */}
                           <Container style={{minWidth: "100%"}}>
                               <Row>
-                                  <Col md={{span: 2, offset: 3}} as={Button} disabled={pagination.currentPage == "1" || pagination.currentPage == ""} onClick={ ()=> setPagination({...pagination, currentPage: pagination.currentPage-1, arrayPage: pagination.arrayPage-1}) }>prev</Col>
+                                  <Col md={{span: 2, offset: 3}} as={Button} disabled={pagination.currentPage == "1" || pagination.currentPage == ""} onClick={previousPage}>prev</Col>
                                   <Col md={{ span: 2}}>
-                                      <input style={{border: "solid", backgroundColor: "white", width: "100%"}} 
-                                          value={focusTableInput ? pagination.currentPage : `Page ${pagination.arrayPage+1} of ${pagination.totalPages}`}
+                                      <input style={{border: "solid", backgroundColor: "white", width: "100%", textAlign: "center"}} 
+                                          value={focusTableInput ? pagination.currentPage : `Page ${pagination.currentPage} of ${pagination.totalPages}`}
                                           onClick={()=> setFocusTableInput(true) }  
-                                          onBlur={()=> {  if(pagination.currentPage == 0) {setPagination({...pagination, currentPage: 1}); setFocusTableInput(false); } else { setFocusTableInput(false) } }}
-                                          onChange={changePage}                            
+                                          onBlur={(e)=> {  if(pagination.currentPage == 0) {setPagination({...pagination, currentPage: 1}); setFocusTableInput(false); } else { setFocusTableInput(false) } changePage() }}
+                                          onChange={(e) => { 
+                                            console.log(`Number: ${Number(e.target.value)}`);
+                                            setPagination({...pagination, currentPage: isNaN(Number(e.target.value)) ? 1 : Number(e.target.value) } )
+                                          }}
                                       ></input>
                                   </Col>
-                                  <Col md={{span: 2}} as={Button} disabled={pagination.currentPage == pagination.totalPages} onClick={ ()=> { if(pagination.currentPage != "") {setPagination({...pagination, currentPage: pagination.currentPage+1, arrayPage: pagination.arrayPage+1})} else { setPagination({...pagination, currentPage: 1, arrayPage: 0}) } }}>next</Col>
+                                  <Col md={{span: 2}} as={Button} disabled={pagination.currentPage == pagination.totalPages} onClick={nextPage}>next</Col>
                               </Row>
                           </Container>
                       </div>
