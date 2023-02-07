@@ -351,14 +351,17 @@ exports.addConnectionToSelf = async (req, res, next) => { // should only be used
       if (user.role != "JR. CONTRACTOR") {
         return res.status(400).json({
           status: "fail",
-          data: "Trying to add a non jr. contractor user to yourself."
+          message: "Trying to add a non jr. contractor user to yourself."
         })
       }
       // check to make sure user doesn't already belong to school or self
-      if (user.connections.find(uID => /^SCHOOL-[0-9]{3,}$/.test(uID))) {
+      if (
+        user.connections.find(uID => /^SCHOOL-[0-9]{3,}$/.test(uID) && 
+        uID == req.user.userID)
+      ) {
         return res.status(400).json({
           status: "fail",
-          data: "jr. contractor already belongs to a school"
+          message: "jr. contractor already belongs to a school"
         })
       }
 
@@ -367,13 +370,13 @@ exports.addConnectionToSelf = async (req, res, next) => { // should only be used
         if (!/^CONTRACTOR-[0-9]{3,}$/.test(contractorID)) {
           return res.status(400).json({
             status: "fail",
-            data: "Provided an invalid contractor ID"
+            message: "Provided an invalid contractor ID"
           })
         }
         if ( !await UserModel.findOne({userID: contractorID}) ) {
           return res.status(400).json({
             status: "fail",
-            data: "contractor doesn't exist"
+            message: "contractor doesn't exist"
           })
         }
 
@@ -451,17 +454,20 @@ exports.getUserNameAndUserIDByUserID = async (userID) => {
 
 // School specific
 exports.getSchoolStudents = async (req, res, next) => {
+  console.log(`current page should be ${req.query?.currentPage}`)
+  console.log(`req params: ${req.query}`)
+  console.log(req.query)
   try {
-    const RECORDS_PER_PAGE = 1
+    const RECORDS_PER_PAGE = 2
     const dbResponse = await UserModel.findOne({userID: req.user.userID}, {_id: 0, connections: 1});
     
     const noOfPages = Math.ceil(dbResponse.connections.length / RECORDS_PER_PAGE)
-    if (req.body?.currentPage && req.body.currentPage > noOfPages) {
+    if (req.query?.currentPage && req.query.currentPage > noOfPages) {
       return next(Helper.generateError(400, "Outside of Page limit"))
     }
 
     const userList = []
-    for(let idx = req.body?.currentPage ? (req.body?.currentPage - 1)*RECORDS_PER_PAGE : 0 ; idx < dbResponse.connections.length; idx++) {
+    for(let idx = req.query?.currentPage ? (req.query?.currentPage - 1)*RECORDS_PER_PAGE : 0 ; idx < dbResponse.connections.length; idx++) {
       console.log(idx)
       const userID = dbResponse.connections[idx]
       let user = await UserModel.findOne({userID: userID})
@@ -485,10 +491,33 @@ exports.getSchoolStudents = async (req, res, next) => {
       status: "success",
       data: {
         pages: noOfPages,
-        currentPage: req.body?.currentPage ? req.body.currentPage : 1,
+        currentPage: req.query?.currentPage ? Number(req.query.currentPage) : 1,
         list: userList
       }
     })
+  } catch (error) {
+    next(Helper.generateError(400, error.message))
+  }
+}
+
+exports.getAllContractors = async (req, res, next) => {
+  // not great if there are millions of users. 
+  // potential solution is to send subset, have a load more button on the front that calls api to get more
+      // because it would have to be ordered in some manner, having a search functionality api would also be handy
+  try {
+    const dbResponse = await UserModel
+      .find({ userID: { $regex: /^CONTRACTOR-[0-9]{3,}$/} }, {_id: 0, name: 1, emailID: 1, userID: 1})
+    const formattedResponse = []
+
+    dbResponse.forEach(user => {
+      formattedResponse.push({
+        userID: user.userID,
+        name: `${user.name.first} ${user.name.last}`,
+        email: user.emailID
+      })
+    })
+
+    res.status(200).json(formattedResponse)
   } catch (error) {
     next(Helper.generateError(400, error.message))
   }

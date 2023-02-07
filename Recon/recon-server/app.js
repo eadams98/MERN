@@ -6,6 +6,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var errorLogger = require("./utilities/errorLogger")
+const init = require("./initDB")
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -17,6 +18,8 @@ app.use(cors())
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+// init DB
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -53,6 +56,7 @@ process.env.STATUS == 'production' ?
 app.listen(PORT, () => {
   console.log(`server listening in port ${PORT}`)
   console.log(`Recon ${process.env.STATUS} server started`)
+  init.CleanDB()
 })
 
 module.exports = app;
