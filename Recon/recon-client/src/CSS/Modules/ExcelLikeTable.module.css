@@ -1,0 +1,156 @@
+/*Personal */
+
+/* TABLE CLASSES */
+.excelContainer {
+  /*height: 50%;
+  width: 98%;*/
+  margin: auto;
+  border:solid;
+  height: 100%;
+  overflow: auto;
+}
+
+.excelContainerPagination {
+  /*height: 50%;
+  width: 98%;*/
+  margin: auto;
+  border:solid;
+  height: 90%;
+  overflow: auto;
+}
+
+.excelSheet {
+  width: 100%; /* makes it stretch full width even if data empty*/
+  /*height:100%;*/ /* This would make the rows stretch the to fill the entire space if not enough rows present */
+  /*table-layout: fixed;*/ /* Lfixed will make it fit inside of generate report, bu it will mess up the title space */
+  position: relative;
+}
+
+.excelThead {
+  position: sticky;
+  top: 0;
+}
+
+.excelTr {
+  height: 50px;
+  box-shadow:inset 0 100px 0 black, inset 0 -100px 0 black;
+}
+
+.excelTd {
+  width: 100%; /*only for table layout: fixed */
+  height: 50px;
+  white-space: nowrap;
+  /*border: solid red;*/
+  overflow-X:auto; /* only show scroll when necessary. Gets rid of it when no scroll */
+
+}
+.even td, .odd td {
+  border: none;
+  /*border-right: none;*/
+  border-left: solid;
+  background-color: inherit;
+}
+
+.even td:first-child, .odd td:first-child {
+  border: none;
+  /*border-right: none;*/
+  /*border-left: solid;*/
+  background-color: inherit;
+}
+
+tr {
+  height: 50px;
+}
+
+.head {
+  background-color: RGB(55, 129, 194);
+  position: relative;
+  text-align: center;
+  border: 0px;
+  border-left: solid;
+  border-width:unset;
+  top: 0;
+  /*width: 20%;*/
+  /*position:sticky;*/
+}
+
+.head:first-child {
+  background-color: RGB(55, 129, 194);
+  position: relative;
+  text-align: center;
+  border: 0px;
+  /*border-left: solid;*/
+  border-width:unset;
+  top: 0;
+  /*width: 20%;*/
+  /*position:sticky;*/
+}
+
+.even {
+  background-color: #C3D9ED;
+}
+
+.odd {
+  background-color: inherit;
+}
+
+/* FILTER CLASSES */
+.filter {
+  background-color: grey;
+  position: absolute;
+  /*width: 100%;*/
+  height: 200px;
+  display: none; /* hide filter until hover*/
+  z-index: 1;
+}
+
+.filterMenu {
+  border: solid green;
+  height: 100%;
+  width: 250px;
+  overflow: scroll;
+}
+
+
+
+/*
+
+HOVERS
+
+*/
+
+.head:hover .filter {
+  display: block;
+  /*background-color: blue;*/
+}
+
+/*
+
+SCROLLBAR
+
+*/
+
+div {
+  overflow: none;
+}
+
+/*.table {
+  height: 300px;
+  width: 100%;
+  overflow-y: scroll;
+  overflow: scroll;
+}*/
+
+.excelContainer::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+  background: white;
+  
+}
+
+.excelContainer::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: black;
+  visibility: visible;
+  transition: 0.3s all linear;
+}

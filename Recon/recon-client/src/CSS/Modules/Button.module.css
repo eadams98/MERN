@@ -1,0 +1,26 @@
+.reconButton {
+  background-color: grey;
+  color: black;
+  border: none;
+  border-radius: 0;
+}
+
+.reconButtonActive {
+  background-color: yellow !important;
+  color: black;
+  border: none;
+  border-radius: 0;
+}
+
+.reconButton:hover {
+  background-color: lightyellow !important;
+  color: black;
+}
+
+.reconButtonActive:hover {
+  color: black !important;
+}
+/*
+style={tab === "current" ? 
+  {backgroundColor: "yellow", border: "none", color: "black", borderRadius: 0}
+  {backgroundColor: "grey", border: "none", borderRadius: 0}}*/

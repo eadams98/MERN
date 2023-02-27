@@ -20,6 +20,9 @@ import PageNotFound from './PageNotFound';
 import GenerateReport from './Routes/Home/Report/Create/GenerateNewReport';
 import ViewWrapper from './Routes/Home/Report/View/wrapper';
 import ProfileContainer from './Routes/Home/Profile/ProfileContainer';
+import ConnectionsContainers from './Routes/Home/Connections/ConnectionContainer';
+import Unauthorized from './Utilities/Unauthorized';
+import PageWrapper from './Utilities/PageWrapper';
 
 function App() {
 
@@ -48,11 +51,15 @@ function App() {
         <Routes>
           <Route element={<PageNotFound/>} path='*'/>
           <Route element={<Login user={user}/>} path="/" />
+          <Route element={<PageWrapper height="100vh"/>} path="/test" />
           <Route element={<PrivateRoutes/>}>
             <Route element={<Home/>} path="/home/" >
-              <Route path="profile" element={<ProfileContainer/>}/>
-              <Route path="report/view" element={<ViewWrapper/>}/>
-              <Route path="report/create" element={<GenerateReport/>}/>
+              <Route element={<Unauthorized/>}>
+                <Route path="profile" element={<ProfileContainer/>}/>
+                <Route path="report/view" element={<ViewWrapper/>}/>
+                <Route path="report/create" element={<GenerateReport/>}/>
+                <Route path="connections" element={<ConnectionsContainers/>}/>
+              </Route>
             </Route>
           </Route>
         </Routes>

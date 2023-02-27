@@ -34,6 +34,7 @@ const tokenChecker = require('../middlewares/tokenChecker');
 // helpers
 
 // routes
+routing.get("/get-all-contractors", tokenChecker, UserController.getAllContractors)
 routing.get("/get-my-connections", tokenChecker, UserController.getMyConnections)
 routing.get("/get-profile", tokenChecker, UserController.getProfile)
 routing.get("/get-school-students", tokenChecker, UserController.getSchoolStudents);
