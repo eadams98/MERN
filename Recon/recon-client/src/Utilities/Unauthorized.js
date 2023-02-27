@@ -13,9 +13,9 @@ const Unauthorized = () => {
   console.log(`location = ${location.pathname}`)
 
   const accessMapping = {
-    "JR. CONTRACTOR": new Set(["/home/report/view"]),
-    "CONTRACTOR": new Set(["/home/report/view"]),
-    "SCHOOL": new Set(["/home/report/view", "/home/connections"])
+    "JR. CONTRACTOR": new Set(["/home/report/view", "/home/profile"]),
+    "CONTRACTOR": new Set(["/home/report/view", "/home/report/create", "/home/profile"]),
+    "SCHOOL": new Set(["/home/report/view", "/home/connections", "/home/profile"])
   };
 
   return (

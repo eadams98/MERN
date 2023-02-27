@@ -111,7 +111,7 @@ function Login(props) {
                             </Col>
                         </Row>
 
-                        { userErrorForm.name ? <Row><Alert as={Col} variant="danger" >{userErrorForm.name}</Alert></Row> : null}
+                        { userErrorForm.name ? <Row><Col md={{span: 7, offset: 1}}><Alert variant="danger" >{userErrorForm.name}</Alert></Col></Row> : null}
 
                         <Row><Col><br/></Col></Row>
 
