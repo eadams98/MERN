@@ -4,10 +4,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark } from '@fortawesome/free-solid-svg-icons'
 import useAxiosPersonal from "../../../Hooks/useAxiosPersonal";
 import Swal from "sweetalert2"
+import { updatePicture, userSelector } from "../../../State/Slices/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const ProfileUploadModal = ({ closeModal, showProfileModal}) => {
   // Hooks
   const axios = useAxiosPersonal()
+  const user = useSelector(userSelector)
+  const dispatch = useDispatch()
+
 
   // Variables
   const [selectedFile, setSelectedFile] = useState();
@@ -37,6 +42,8 @@ const ProfileUploadModal = ({ closeModal, showProfileModal}) => {
       console.log(resp)
       message = resp.data.data
       status = resp.data.status
+      console.log(message)
+      dispatch(await (updatePicture(message)))
       closeModal()//setProfileModal(false)
     } catch (error) {
       console.log(error)
@@ -50,7 +57,7 @@ const ProfileUploadModal = ({ closeModal, showProfileModal}) => {
       timer: 2000,
       text: message,
       showConfirmButton: false
-    }).then(()=> window.location.reload())
+    })//.then(()=> window.location.reload())
 
   }
 

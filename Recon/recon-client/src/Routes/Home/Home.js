@@ -28,13 +28,13 @@ function Home(props) {
         <Container fluid className='border vh-100'>
             <PrimaryNav navHeight="10"/>
 
-            <Row style={{height: "90%", backgroundColor: "grey"}}>
+            <Row style={{height: "90%", backgroundColor: "white"}}>
               {/*<Col>HOME APP</Col>
               <Col> <Button onClick={() => navigate("ok")}> </Button> </Col>*/}
               <Col style={{ height: "100%"}}>
                 {
                   location.pathname === "/home" ?
-                    <div style={{width: "100%", height: "100%", border: "solid red", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div className="fullScreen" style={{width: "100%", height: "100%", border: "solid red", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <label>RECON</label>
                     </div>
                     :

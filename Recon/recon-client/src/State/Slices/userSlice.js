@@ -18,7 +18,8 @@ const initialState = {
   isAuthenticate: false,
   name: "",
   token: null,
-  user: null
+  user: null,
+  profilePicture: ""
 }
 
 const  userSlice = createSlice({
@@ -39,6 +40,9 @@ const  userSlice = createSlice({
     updateUserToken: (state, {payload}) => {
       state.user.accessToken = payload
       state.isLoading = false
+    },
+    updateUserProfilePhote: (state, {payload}) => {
+      state.user.profilePicture = `http://localhost:4001/${payload}`
     },
     login: (state) => {
       state.isLoading = true
@@ -64,7 +68,7 @@ const  userSlice = createSlice({
 });
 
 export const userSelector = (state) => state.user;
-export const {logout, login, getUser, loginSuccess, loginFail, resetUser, updateUserToken} = userSlice.actions;
+export const {logout, login, getUser, loginSuccess, loginFail, resetUser, updateUserToken, updateUserProfilePhote} = userSlice.actions;
 export default userSlice.reducer;
 
 //API
@@ -117,6 +121,20 @@ export function attemptLogout() {
       dispatch(logout())
     } catch (error) {
       console.log(error)
+    }
+  }
+}
+
+export function updatePicture(src) {
+  return async (dispatch) => {
+    
+    try {
+      dispatch(updateUserProfilePhote(src))
+      //dispatch(resetUser())
+    } catch (error) {
+      console.log(error)
+    } finally {
+      console.log(userSelector.toString())
     }
   }
 }

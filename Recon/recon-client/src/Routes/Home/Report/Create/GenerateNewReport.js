@@ -23,7 +23,7 @@ const GenerateReport = () => {
   const setUserIDInParent = (userID) => { setUserID(userID); console.log(userID) }
 
   return(
-    <Container fluid style={{ backgroundColor: "yellow", height: "100%" }}>
+    <Container fluid className="fullScreen">
       <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center"}}> 
         <Col>{/*<Col className='h-75'>*/}
           { 

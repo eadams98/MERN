@@ -124,7 +124,7 @@ const NewReportForm = ({ userID, resetUserID }) => {
 
   if (loading) return <Spinner /> 
   else { return (
-    <Form as={Container} fluid style={{ backgroundColor: "blue", height: "75vh", overflow: "auto", position: "relative" }}>
+    <Form as={Container} fluid style={{ backgroundColor: "grey", height: "75vh", overflow: "auto", position: "relative" }}>
       <Form.Group className="mb-3" controlId="reportFormDate">
         <Row>
           <Col md={1} style={{ display: "flex" }}>

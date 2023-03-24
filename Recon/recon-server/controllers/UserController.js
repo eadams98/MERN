@@ -295,7 +295,7 @@ exports.uploadProfilePicture = async (req, res, next) => {
     )
     res.status(200).json({
       status: 'success',
-      data: 'picture successfully uploaded'
+      data: req.file.path
     })
   } catch (error) {
     next(Helper.generateError(400, error.message))

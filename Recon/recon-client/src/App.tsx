@@ -1,6 +1,8 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import './CSS/general.css';
+import './CSS/general.css'
 
 import {
   createBrowserRouter,
@@ -23,6 +25,7 @@ import ProfileContainer from './Routes/Home/Profile/ProfileContainer';
 import ConnectionsContainers from './Routes/Home/Connections/ConnectionContainer';
 import Unauthorized from './Utilities/Unauthorized';
 import PageWrapper from './Utilities/PageWrapper';
+
 
 function App() {
 

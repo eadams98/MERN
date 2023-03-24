@@ -4,7 +4,7 @@ import ProfileForm from "./ProfileForm"
 const ProfileContainer = () => {
   
   return (
-    <Container fluid style={{ height: "100%", backgroundColor: "yellow", display: 'flex', alignItems: "center"}}>
+    <Container fluid className="fullScreen" style={{ display: 'flex', alignItems: "center"}}>
       <ProfileForm />
     </Container>
   )

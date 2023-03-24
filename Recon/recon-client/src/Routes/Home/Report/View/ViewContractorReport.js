@@ -9,6 +9,8 @@ import SelectUser from "./SelectUser/SelectUser";
 import SelectUserWeek from "./SelectUserWeek/SelectUserWeek";
 //const SelectUser = lazy(() => import("./SelectUser/SelectUser"))
 
+// Styles
+import pageStyles from '../../../../CSS/Modules/Page.module.css'
 
 const ViewContractorReport = () => {
   
@@ -33,7 +35,7 @@ const ViewContractorReport = () => {
   // methods
 
   return(
-    <Container fluid style={{ backgroundColor: "yellow", height: "100%" }}>
+    <Container fluid className="fullScreen">
       <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center"}}> 
         <Col> {/* <Col className='h-75'> */}
         

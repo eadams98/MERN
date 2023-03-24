@@ -22,7 +22,7 @@ const Unauthorized = () => {
     auth.isLoading ?
       <div>LOADING</div>
       :
-      accessMapping[auth.user.role].has(location.pathname) ? <Outlet/> : <div>UNAUTHORIZED ACCESSED</div>
+      accessMapping[auth.user.role].has(location.pathname) ? <Outlet/> : <div className="fullScreen">UNAUTHORIZED ACCESSED</div>
   )
 }
 

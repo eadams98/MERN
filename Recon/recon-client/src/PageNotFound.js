@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 const PageNotFound= () =>{
     const navigate = useNavigate();
     return(
-            <Container fluid style={{ height: "100vh", backgroundColor: "grey", border: "solid 3px", display: 'flex', alignItems: "center", justifyContent: "center"}}>
+            <Container fluid className="fullScreen" style={{ height: "100vh", backgroundColor: "white", border: "solid 3px", display: 'flex', alignItems: "center", justifyContent: "center"}}>
                 <Container style={{border: "solid", backgroundColor: "white"}}>
                     <Row>
                         <Col><h1>404 Error</h1></Col>
