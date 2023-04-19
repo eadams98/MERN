@@ -102,14 +102,14 @@ export function attemptLogin(user, pass) {
     setTimeout(async ()=>{
       try {
         console.log("Before")
-        const response = await UserService.loginAttempt({ email: user, password: pass })
+        const response = await UserService.loginAttempt({ username: user, password: pass })
         console.log("Response = ", response.data)
-        dispatch(loginSuccess(response.data.data))
+        dispatch(loginSuccess(response.data))
       } catch (error) {
         console.log(error.response.data)
         dispatch(loginFail(error.response.data.message))
       }
-    }, 10000)
+    }, 1000)
     
   }
 }

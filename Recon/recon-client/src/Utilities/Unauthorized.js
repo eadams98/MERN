@@ -18,11 +18,17 @@ const Unauthorized = () => {
     "SCHOOL": new Set(["/home/report/view", "/home/connections", "/home/profile"])
   };
 
+  const convert = {
+    "trainee": "JR. CONTRACTOR",
+    "contractor": "CONTRACTOR",
+    "school": "SCHOOL"
+  }
+
   return (
     auth.isLoading ?
       <div>LOADING</div>
       :
-      accessMapping[auth.user.role].has(location.pathname) ? <Outlet/> : <div className="fullScreen">UNAUTHORIZED ACCESSED</div>
+      accessMapping[convert[auth.user.roles[0].authority]].has(location.pathname) ? <Outlet/> : <div className="fullScreen">UNAUTHORIZED ACCESSED</div>
   )
 }
 

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav, CardImg } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 import defaultProfilePicture from '../../../Default-Profile-Picture.jpeg';
+import { useEffect } from "react";
 
 const PrimaryNav = ({navHeight = "10", ...restProps}) => {
   
@@ -22,6 +23,12 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
     return `${nameObj.first} ${nameObj.last}`
   }
   const handleLogout = async () => dispatch(await attemptLogout());
+
+  useEffect(() => {
+    console.log("user: ");
+    console.log(user);
+    console.log(user.user)
+  }, [])
 
   
   return (
@@ -46,7 +53,7 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
             <Navbar.Collapse className="justify-content-end">
               <Nav.Link as={Button} onClick={handleLogout}>Logout</Nav.Link>
               <Navbar.Text>
-                Signed in as: <a href="#login">{formName(user.user.name)}</a>
+                Signed in as: <a href="#login">{user.user.username}</a>
               </Navbar.Text>
             </Navbar.Collapse>
           </Container>

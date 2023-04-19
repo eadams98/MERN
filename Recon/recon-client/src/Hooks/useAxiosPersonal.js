@@ -12,10 +12,11 @@ const useAxiosPersonal = () => {
   useEffect(() => {
     const requestIntercept = axios.interceptors.request.use(
       config => {
-        const token = user.user.accessToken
+        const token = user.user.token
     
-        //console.log(`token ${token}`)
+        console.log(`token ${token}`)
         if (token) {
+          console.log("config auth header")
           config.headers['Authorization'] = 'Bearer ' + token
         }
         // config.headers['Content-Type'] = 'application/json';

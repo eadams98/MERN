@@ -33,8 +33,11 @@ const ProfileForm = () => {
     const getProfileDetails = async () => {
       setLoading(true)
       try {
-        const resp = await axios('/get-profile')
-        const { name, role, email, connections } = resp.data.data
+        //console.log(`role = ${user.user.roles[0].authority}`)
+        const role = user.user.roles[0].authority
+        const id = user.user.id
+        const resp = await axios(`${role}/${id}`)
+        /*const { name, role, email, connections } = resp.data.data
         const profileForm = {
           name: name,
           email: email,
@@ -44,7 +47,8 @@ const ProfileForm = () => {
   
         console.log(resp.data.data)
         setProfileForm(profileForm)
-        snapshots.SetSnapshot('profileForm', profileForm)
+        snapshots.SetSnapshot('profileForm', profileForm)*/
+        console.log(`date = ${resp.data}`)
       } catch (error) {
         console.log(error)
       }
@@ -138,16 +142,16 @@ const ProfileForm = () => {
           <Col>
             <Container fluid style={{ height: "100%", border: "solid red"}}>
               <Row style={{ height: "33.4%", border: "solid green"}}>
-                <Col>First: <Form.Control name='first' onChange={updateProfileForm} disabled={!edit} value={profileForm.name.first} style={{ textAlign: "center" }} /> </Col>
-                <Col>Last: <Form.Control name='last' onChange={updateProfileForm} disabled={!edit} value={profileForm.name.last} style={{ textAlign: "center" }} /> </Col>
+                <Col>First: <Form.Control name='first' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.first} style={{ textAlign: "center" }} /> </Col>
+                <Col>Last: <Form.Control name='last' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.last} style={{ textAlign: "center" }} /> </Col>
               </Row>
 
               <Row style={{ height: "33.3%", border: "solid green"}}>
-                <Col>Email: <Form.Control name='email' onChange={updateProfileForm} disabled={!edit} value={profileForm.email} style={{ textAlign: "center" }} /> </Col>
+                <Col>Email: <Form.Control name='email' onChange={updateProfileForm} disabled={!edit} value={profileForm?.email} style={{ textAlign: "center" }} /> </Col>
               </Row>
               
               <Row style={{ height: "33.3%", border: "solid green"}}>
-                <Col>Role: <b>{profileForm.role}</b> </Col>
+                <Col>Role: <b>{profileForm?.role}</b> </Col>
               </Row>
             </Container>
           </Col>
