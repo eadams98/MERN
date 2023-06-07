@@ -44,10 +44,10 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
             <Nav className="me-auto">
               <NavDropdown title="Report" id="basic-nav-dropdown">
                 <NavDropdown.Item as={Link} to={"report/view"} disabled={location.pathname === "/home/report/view"}>View</NavDropdown.Item>
-                { user.user.role !== "JR. CONTRACTOR" && user.user.role !== "SCHOOL" ? <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item> : null }
+                { user.user.roles[0].authority !== "trainee" && user.user.roles[0].authority !== "school" ? <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item> : null }
               </NavDropdown>
                 <Nav.Link as={Link} to={"profile"} disabled={location.pathname === "/home/profile"}>Profile</Nav.Link>
-                { user.user.role === "SCHOOL" || user.user.role !== "COUNCIL" ? <Nav.Link as={Link} to={"/home/connections"} disabled={location.pathname === "/home/connections"}>Connections</Nav.Link> : null }
+                { user.user.roles[0].authority === "school" || user.user.roles[0].authority !== "council" ? <Nav.Link as={Link} to={"/home/connections"} disabled={location.pathname === "/home/connections"}>Connections</Nav.Link> : null }
                 <Nav.Link as={Link} to={"sample"} disabled={location.pathname === "/home/sample"}>Sample</Nav.Link>
             </Nav>
             <Navbar.Collapse className="justify-content-end">

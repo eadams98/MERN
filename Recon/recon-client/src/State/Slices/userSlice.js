@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import swal from "sweetalert2";
 import UserService from "../../Services/User"
 
 /*type UserType = {
@@ -37,9 +38,11 @@ const  userSlice = createSlice({
     getUser: (state) => {
       state.isLoading = true
     },
-    updateUserToken: (state, {payload}) => {
-      state.user.accessToken = payload
+    updateUserToken: (state, action) => {
+      state.user.token = action.payload
       state.isLoading = false
+      console.log("USER TOKEN UPDATE")
+      console.log(state.user)
     },
     updateUserProfilePhote: (state, {payload}) => {
       state.user.profilePicture = `http://localhost:4001/${payload}`
@@ -95,19 +98,29 @@ export function updateAuth(newAccessToken) {
   }
 }
 
-export function attemptLogin(user, pass) {
+export function attemptLogin(user, pass, userType) {
   console.log("ATTEMPT LOGIN DISPATCH")
   return async (dispatch) => {
     dispatch(getUser())
     setTimeout(async ()=>{
       try {
         console.log("Before")
-        const response = await UserService.loginAttempt({ username: user, password: pass })
+        const response = await UserService.loginAttempt({ username: user, password: pass }, userType)
         console.log("Response = ", response.data)
         dispatch(loginSuccess(response.data))
       } catch (error) {
         console.log(error.response.data)
+        console.log(error)
         dispatch(loginFail(error.response.data.message))
+        swal.fire({
+          position: 'top',
+          icon: 'error',
+          title:"ERROR",
+          text: error.response.data.errorMessage,
+          footer: error.response.data.timestamp,
+          showConfirmButton: false,
+          timer: 3000
+      })
       }
     }, 1000)
     

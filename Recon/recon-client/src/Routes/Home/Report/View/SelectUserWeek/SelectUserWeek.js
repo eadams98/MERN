@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { userSelector } from "../../../../../State/Slices/userSlice";
 import { Col, Container, Form, FormGroup, Row, Button, FormLabel, Spinner } from "react-bootstrap"
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 import _ from 'lodash'
@@ -9,10 +11,18 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
   //Hooks
   const axios = useAxiosPersonal()
   const snapshots = useSnapshots()
+  const user = useSelector(userSelector)
 
   //Variables
+  const [reportYear, setReportYear] = useState("")
+  const [reportMonth, setReportMonth] = useState("")
   const [reportWeek, setReportWeek] = useState("")
-  const [reportWeeks, setReportWeeks] = useState([])
+  const [isError, setIsError] = useState(false)
+
+  const [reportYears, setReportYears] = useState([])
+  const [reportMonths, setReportMonths] = useState([])
+  const [reportDays, setReportDays] = useState([])
+
   const [reportForm, setReportForm] = useState({})
   const [inRevise, setInRevise] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -24,7 +34,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
     "F+", "F", "F-",
   ]
 
-  // Methods
+  // Methods 
   const checkSnapshotValidation = () => {
     const snapshot = snapshots.GetSnapshot('reportForm')
     console.log(reportForm, snapshot)
@@ -71,8 +81,10 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
 
   // Effects
   useEffect(() => {
+    console.log(userID)
+    setLoading(true)
     
-    const getReportWeeksOfMyUser = async () => {
+    const getReportYearsOfMyUser = async () => {
       console.log(role)
       let response;
       const defaultContractorReportForm = {
@@ -86,41 +98,53 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
         description: "",
         revision: "",
       }
-      switch(role) {
-        case "CONTRACTOR": 
+
+      try {
+      switch(role.toLowerCase()) {
+        case "contractor": 
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios.get(`get-my-submitted-reports/${userID}`)
+          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
           break
-        case "JR. CONTRACTOR":
+        case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios.get(`get-my-report-weeks`)
+          response = await axios({ baseURL:"http://localhost:4002", url: `trainee/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
           break
         default:
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
       }
-
-      setLoading(true)
-      
       console.log(response)
-      setReportWeeks(response.data)
+      setReportYears(response.data)
+    } catch (err) {
+      setIsError(true)
+      Swal.fire({
+        position: 'top',
+        icon: 'error',
+        timer: 2000,
+        text: "SOME ERROR OCCURED"
+      })
+    }
+      
+      
       setLoading(false)
     }
-    getReportWeeksOfMyUser()
+    getReportYearsOfMyUser()
   }, [])
 
   useEffect(() => {
+    //contractor/get-report?by=contractor.2@yahoo.com&for=trainee.2@yahoo.com&weekStart=1998-05-17&weekEnd=1998-05-20
     const getReport = async () => {
       let response
       setLoading(true)
 
-      switch(role) {
-        case "CONTRACTOR": 
-          response = await axios.post(`get-contractor-report`, { week: reportWeek, createdFor: userID })
+      switch(role.toLowerCase()) {
+        case "contractor": 
+          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/get-report?by=${user.user.email}&for=${userID}&weekStart=${reportWeek.split(" - ")[0]}&weekEnd=${reportWeek.split(" - ")[1]}`, method: "get"})
+          //await axios.get(`get-contractor-report/years?by=${user.user.email}&for=${userID}`, { week: reportWeek, createdFor: userID })
           break
-        case "JR. CONTRACTOR":
+        case "jr. contractor":
           response = await axios.post(`get-jr-contractor-report`, { week: reportWeek })
           break
         default:
@@ -141,15 +165,103 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
         setLoading(false)
       },10000)
     }
-    getReport()
-      .catch(error => (console.log(error)))
+    if (reportWeek !== "") {
+      getReport()
+        .catch(error => (console.log(error)))
+    }
   }, [reportWeek])
 
   useEffect(()=>{
     console.log(reportForm)
   },[reportForm])
 
+  useEffect(()=>{
+    const getReportMonthsOfMyUser = async () => {
+      console.log(role)
+      let response;
+      const defaultContractorReportForm = {
+        reportID: "",
+        grade: "",
+        description: "",
+      }
+      const defaultJrContractorReportForm = {
+        reportID: "",
+        grade: "",
+        description: "",
+        revision: "",
+      }
+      switch(role.toLowerCase()) {
+        case "contractor": 
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/report/months?by=${user.user.email}&for=${userID}&year=${reportYear}`, method: "get"})
+          break
+        case "jr. contractor":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          //response = await axios.get(`get-my-report-weeks`)
+          break
+        default:
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+      }
+
+      
+      setLoading(true)
+      console.log(response)
+      setReportMonths(response.data)
+      setLoading(false)
+      
+    }
+    if (reportYear !== "") {
+      getReportMonthsOfMyUser()
+    }
+  },[reportYear])
+
+  useEffect(()=>{
+    const getReportDaysOfMyUser = async () => {
+      console.log(role)
+      let response;
+      const defaultContractorReportForm = {
+        reportID: "",
+        grade: "",
+        description: "",
+      }
+      const defaultJrContractorReportForm = {
+        reportID: "",
+        grade: "",
+        description: "",
+        revision: "",
+      }
+      switch(role.toLowerCase()) {
+        case "contractor": 
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/report/weeks?by=${user.user.email}&for=${userID}&year=${reportYear}&month=${reportMonth}`, method: "get"})
+          break
+        case "jr. contractor":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          //response = await axios.get(`get-my-report-weeks`)
+          break
+        default:
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+      }
+
+      setLoading(true)
+      console.log(response)
+      setReportDays(response.data)
+      setLoading(false)
+    }
+
+    if (reportMonth !== "") {
+      getReportDaysOfMyUser()
+    }
+  },[reportMonth])
+
   if (loading) { return <Spinner/>}
+  else if (!loading && isError) { return <h1>ERROR LOADING SOME DATA</h1> }
   else return (
     <Container fluid style={{ backgroundColor: "grey", height: "75vh" }}>
 
@@ -158,16 +270,42 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
           <Col md={1} style={{ display: "flex" }}>
             <FormLabel onClick={resetParent} style={{ margin: "auto", textAlign: "center", cursor: "pointer" }}>{`< USERS`}</FormLabel>
           </Col>
-          <Col md={{span: 4, offset: 3}} style={{ display: "flex" }}>
+          <Col md={{span: 2, offset: 1}} style={{ display: "flex" }}>
+            <Form.Select
+              value={reportYear}
+              onChange={(e) => setReportYear(e.target.value)}
+              disabled={inRevise} 
+              style={{ margin: "auto", textAlign: "center" }} 
+            >
+              <option value="" hidden>{reportYears.length > 0 ? '--select a year---' : 'No Years'}</option>
+              {
+                reportYears.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
+              }
+            </Form.Select>
+          </Col>
+          <Col md={{span: 2, offset: 1}} style={{ display: "flex" }}>
+            <Form.Select
+              value={reportMonth}
+              onChange={(e) => setReportMonth(e.target.value)}
+              disabled={inRevise} 
+              style={{ margin: "auto", textAlign: "center" }} 
+            >
+              <option value="" hidden>{reportMonths.length > 0 ? '--select a month---' : 'No Months'}</option>
+              {
+                reportMonths.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
+              }
+            </Form.Select>
+          </Col>
+          <Col md={{span: 2, offset: 1}} style={{ display: "flex" }}>
             <Form.Select
               value={reportWeek}
               onChange={(e) => setReportWeek(e.target.value)}
               disabled={inRevise} 
               style={{ margin: "auto", textAlign: "center" }} 
             >
-              <option value="" hidden>{reportWeeks.length > 0 ? '--select a week---' : 'No Weeks'}</option>
+              <option value="" hidden>{reportDays.length > 0 ? '--select a day---' : 'No Days'}</option>
               {
-                reportWeeks.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
+                reportDays.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
               }
             </Form.Select>
           </Col>
@@ -175,6 +313,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
 
       {/* Row 2 */}
       <Row style={{ height: "90%", border: "solid", display: "flex"}}>
+        <span style={{textAlign: "center"}}>{ reportYear != '' && reportMonth != '' && reportWeek != '' ? `${reportWeek}` : 'NO DATE' }</span>
         <Container fluid style={{ backgroundColor: "white", height: "90%", margin: "auto" }}>
           <div style={{height: "20%", border: "solid"}}>
             <Row>
@@ -230,8 +369,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
                             value={reportForm.revision}
                             onChange={updateReportForm}
                             type="textarea"
-                            style={{ width: "100%", height: "100%", resize: "none"}}
-                                               
+                            style={{ width: "100%", height: "100%", resize: "none"}}          
                           />
                           :
                           null
@@ -250,7 +388,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
                 inRevise ?
                   <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} onClick={()=> {setInRevise(false); checkSnapshotValidation()}} variant="danger">Cancel</Button>
                   :
-                  <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} onClick={()=> setInRevise(true)}>Revise</Button> 
+                  <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} hidden={!_.isEqual(reportForm, snapshots.GetSnapshot('reportForm'))} onClick={()=> setInRevise(true)}>Revise</Button> 
               }
             </Col>
             <Col md={{span: 4, offset: 2}} style={{position: "relative"}}>

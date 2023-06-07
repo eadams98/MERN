@@ -6,14 +6,14 @@ import ViewJrContractorReport from "./ViewJrContractorReport"
 const ViewWrapper = () => {
   let user = useSelector(userSelector)
 
-    switch(user.user.role.toLowerCase()) {
+    switch(user.user.roles[0].authority.toLowerCase()) {
       case "admin":
         return <div> admin </div>
         break
       case "contractor":
         return <ViewContractorReport />
         break 
-      case "jr. contractor":
+      case "trainee":
         return <ViewJrContractorReport />
         break
       case "school":

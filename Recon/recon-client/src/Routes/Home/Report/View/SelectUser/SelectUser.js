@@ -11,7 +11,7 @@ const SelectUser = ({setUserIDInParent, axiosURL}) => {
   useEffect(()=> {
     const getMyUsers = async () => {
       setLoading(true)
-      const response = await axios.get(axiosURL)
+      const response = await axios({url: axiosURL, method: "GET"})
       console.log(response)
       setMyUsers(response.data)
       setLoading(false)
@@ -36,7 +36,7 @@ const SelectUser = ({setUserIDInParent, axiosURL}) => {
             <Col>
               <Form.Select style={{ margin: "auto", textAlign: "center" }} onChange={(e) => setUserIDInParent(e.target.value)} >
                 <option value="" hidden>{myUsers.length > 0 ? '--select a user---' : 'No users'}</option>
-                {myUsers.map((userObj, index) => { return <option key={index} value={userObj.userID}>{userObj.name}</option> })}
+                {myUsers.map((userObj, index) => { return <option key={index} value={userObj.email}>{userObj.email}</option> })}
               </Form.Select>
             </Col>
           </Row>

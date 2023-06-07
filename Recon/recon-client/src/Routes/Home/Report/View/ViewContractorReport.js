@@ -40,11 +40,11 @@ const ViewContractorReport = () => {
         <Col> {/* <Col className='h-75'> */}
         
           { 
-            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent} axiosURL="get-my-users-with-reports"/> : null
+            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent} axiosURL={`contractor/${user.user.id}/trainees`}/> : null
           }
 
           { 
-            userID ? <SelectUserWeek userID={userID} setReportWeekInParent={setReportWeekInParent} resetParent={() => {setUserID(""); setReportWeek("");}} role={user.user.role}/> : null
+            userID ? <SelectUserWeek userID={userID} setReportWeekInParent={setReportWeekInParent} resetParent={() => {setUserID(""); setReportWeek("");}} role={user.user.roles[0].authority}/> : null
           }
 
         </Col>

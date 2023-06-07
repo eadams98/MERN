@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { userSelector } from "../../../../../State/Slices/userSlice";
 import { Col, Container, Form, FormGroup, Row, Button, Spinner, FormLabel } from "react-bootstrap"
 import Swal from "sweetalert2";
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
@@ -7,15 +9,14 @@ const NewReportForm = ({ userID, resetUserID }) => {
 
   //hooks
   const axios = useAxiosPersonal()
+  const user = useSelector(userSelector)
 
   // variables
   const [loading, setLoading] = useState(false)
   const [reportForm, setReportForm] = useState({
     grade: "",
-    week: {
-      start: "",
-      end: ""
-    },
+    weekStartDate: "",
+    weekEndDate: "",
     description: ""
   })
   const [weekly, setWeekly] = useState("")
@@ -54,10 +55,8 @@ const NewReportForm = ({ userID, resetUserID }) => {
     if (!inp) {
       setReportForm({
         ...reportForm,
-        week: {
-          start: "",
-          end: ""
-        }
+        weekStartDate: "",
+        weekEndDate: "",
       })
       //setWeekRange("")
       return
@@ -76,12 +75,18 @@ const NewReportForm = ({ userID, resetUserID }) => {
       days.push(new Date(year, 0, day - dayOffset + i)); // add a new Date object to the array with an offset of i days relative to the first day of the week
     console.log(`${days[0].toDateString()} - ${days[days.length-1].toDateString()}`)
     //setWeekRange(`${days[0].toDateString()} - ${days[days.length-1].toDateString()}`)
+    
+    const startYear = days[0].toLocaleString("default", { year: "numeric"})
+    const startMonth = days[0].toLocaleString("default", { month: "2-digit"})
+    const startDay = days[0].toLocaleString("default", { day: "2-digit"})
+    const endYear = days[days.length-1].toLocaleString("default", { year: "numeric"})
+    const endMonth = days[days.length-1].toLocaleString("default", { month: "2-digit"})
+    const endDay = days[days.length-1].toLocaleString("default", { day: "2-digit"})
+
     setReportForm({
       ...reportForm,
-      week: {
-        start: days[0].toDateString(),
-        end: days[days.length-1].toDateString()
-      }
+      weekStartDate: `${startYear}-${startMonth}-${startDay}`,
+      weekEndDate: `${endYear}-${endMonth}-${endDay}`,
     })
     return days;
   }
@@ -89,18 +94,21 @@ const NewReportForm = ({ userID, resetUserID }) => {
   let submitForm = async () => {
     const sendForm = {
       ...reportForm,
-      user: userID
+      sentByEmail: user.user.email,
+      sentForEmail: userID
     }
     let data, status;
     
 
     try {
-      const response = await axios.post('/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
-      data = response.data.data
+      //const response = await axios.post('/contractor/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
+      const response = await axios({ baseURL:"http://localhost:4002", url: "/contractor/create-report/", method: "post", data: sendForm})
+      data = response.data
       status = 'success'
+      console.log(response)
     } catch (error) {
       console.log(error)
-      ///data = error.response.data.message
+      data = error.response.data.errorMessage
       status = 'fail'
     }
     //const response = axios.post('http://localhost:4001/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
@@ -116,7 +124,7 @@ const NewReportForm = ({ userID, resetUserID }) => {
 
   // Effects
   useEffect(()=> {
-    if (reportForm.description && reportForm.grade && reportForm.week.start && reportForm.week.end)
+    if (reportForm.description && reportForm.grade && reportForm.weekStartDate && reportForm.weekEndDate)
       setValidForm(true)
     else
       setValidForm(false)
@@ -131,7 +139,7 @@ const NewReportForm = ({ userID, resetUserID }) => {
             <FormLabel onClick={resetUserID} style={{ margin: "auto", textAlign: "center", cursor: "pointer" }}>{`< USERS`}</FormLabel>
           </Col>
           <Col md={3} style={{textAlign:"right"}}><Form.Label>{`Week:`}</Form.Label></Col>
-          <Col style={{textAlign:"left"}}><Form.Label>{`${reportForm.week.start}${reportForm.week?.start ? ' - ' : ''}${reportForm.week.end}`}</Form.Label></Col>
+          <Col style={{textAlign:"left"}}><Form.Label>{`${reportForm.weekStartDate}${reportForm.weekStartDate ? ' - ' : ''}${reportForm.weekEndDate}`}</Form.Label></Col>
         </Row>
         <Form.Control name="week" type="week" onChange={updateReportForm} value={weekly}/>
       </Form.Group>
@@ -193,7 +201,7 @@ const NewReportForm = ({ userID, resetUserID }) => {
             </Form.Control>
           </Col>
           <Col>
-            <Form.Control as={Button} onClick={resetReportForm} disabled={!reportForm.description && !reportForm.grade && !reportForm.week.start && !reportForm.week.end} >
+            <Form.Control as={Button} onClick={resetReportForm} disabled={!reportForm.description && !reportForm.grade && !reportForm.weekStartDate && !reportForm.weekEndDate} >
               Reset
             </Form.Control>
           </Col>

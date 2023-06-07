@@ -37,18 +37,21 @@ const ProfileForm = () => {
         const role = user.user.roles[0].authority
         const id = user.user.id
         const resp = await axios(`${role}/${id}`)
-        /*const { name, role, email, connections } = resp.data.data
+        const { firstName, lastName, trainees, email } = resp.data
         const profileForm = {
-          name: name,
+          name: {
+            first: firstName,
+            last: lastName
+          },
           email: email,
           role: role,
-          connections: connections
+          connections: trainees
         }
   
-        console.log(resp.data.data)
         setProfileForm(profileForm)
-        snapshots.SetSnapshot('profileForm', profileForm)*/
-        console.log(`date = ${resp.data}`)
+        snapshots.SetSnapshot('profileForm', profileForm)
+        console.log(`data = ${resp.data}`)
+        console.log(resp)
       } catch (error) {
         console.log(error)
       }

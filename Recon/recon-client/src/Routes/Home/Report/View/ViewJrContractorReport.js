@@ -17,7 +17,7 @@ const ViewJrContractorReport = () => {
 
   // Effects
   useEffect(()=> {
-    
+    console.log(user.user.roles[0].authority)
   }, [])
 
   // methods
@@ -26,7 +26,7 @@ const ViewJrContractorReport = () => {
     <Container fluid className="fullScreen">
       <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center"}}> 
         <Col> {/* <Col className='h-75'> */}
-          <SelectUserWeek userID={user.user.userID} role={user.user.role}/>
+          <SelectUserWeek userID={user.user.userID} role={user.user.roles[0].authority}/>
         </Col>
       </Row>
     </Container>

@@ -16,6 +16,9 @@ const GenerateReport = () => {
   const refresh = useRefreshToken()
   const axios = useAxiosPersonal()
 
+  useEffect(() => {
+    console.log(user)
+  }, [])
   
   const [userID, setUserID] = useState("")
 
@@ -27,7 +30,7 @@ const GenerateReport = () => {
       <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center"}}> 
         <Col>{/*<Col className='h-75'>*/}
           { 
-            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} axiosURL="get-my-jr-contractors"/> : null
+            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} axiosURL={`/contractor/${user.user.id}/trainees`}/> : null
           }
           {
             userID ? <NewReportForm userID={userID} resetUserID={() => setUserID("")}/> : null
