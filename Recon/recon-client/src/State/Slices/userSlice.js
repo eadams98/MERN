@@ -66,15 +66,33 @@ const  userSlice = createSlice({
       state.name = "";
       state.user = null
       state.isLoading = false
+    },
+    loadingInProgress: (state) => {
+      state.isLoading = true
+    },
+    loadingComplete: (state) => {
+      state.isLoading = false
     }
   }
 });
 
 export const userSelector = (state) => state.user;
-export const {logout, login, getUser, loginSuccess, loginFail, resetUser, updateUserToken, updateUserProfilePhote} = userSlice.actions;
+export const {logout, login, getUser, loginSuccess, loginFail, resetUser, updateUserToken, updateUserProfilePhote, loadingInProgress, loadingComplete} = userSlice.actions;
 export default userSlice.reducer;
 
 //API
+export function setLoadingInProgress() {
+  return async (dispatch) => {
+    dispatch(loadingInProgress())
+  }
+}
+
+export function setLoadingComplete() {
+  return async (dispatch) => {
+    dispatch(loadingComplete())
+  }
+}
+
 export function resetAuth() {
   return async (dispatch) => {
     dispatch(getUser())

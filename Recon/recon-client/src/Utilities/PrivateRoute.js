@@ -11,9 +11,9 @@ const PrivateRoutes = () => {
   })
   console.log(auth)
   return (
-    auth.isLoading ?
+    /*auth.isLoading ?
       <div>LOADING</div>
-      :
+      :*/
       auth.user ? <Outlet/> : <Navigate to="/"/>
   )
 }

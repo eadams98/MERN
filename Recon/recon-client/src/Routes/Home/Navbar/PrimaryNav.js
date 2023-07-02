@@ -46,9 +46,9 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
                 <NavDropdown.Item as={Link} to={"report/view"} disabled={location.pathname === "/home/report/view"}>View</NavDropdown.Item>
                 { user.user.roles[0].authority !== "trainee" && user.user.roles[0].authority !== "school" ? <NavDropdown.Item as={Link} to={"report/create"} disabled={location.pathname === "/home/report/create"}>Create</NavDropdown.Item> : null }
               </NavDropdown>
-                <Nav.Link as={Link} to={"profile"} disabled={location.pathname === "/home/profile"}>Profile</Nav.Link>
-                { user.user.roles[0].authority === "school" || user.user.roles[0].authority !== "council" ? <Nav.Link as={Link} to={"/home/connections"} disabled={location.pathname === "/home/connections"}>Connections</Nav.Link> : null }
-                <Nav.Link as={Link} to={"sample"} disabled={location.pathname === "/home/sample"}>Sample</Nav.Link>
+                <Nav.Link as={Link} to={"profile"} disabled={location.pathname === "/home/profile" || user.isLoading}>Profile</Nav.Link>
+                { user.user.roles[0].authority === "school" || user.user.roles[0].authority !== "council" ? <Nav.Link as={Link} to={"/home/connections"} disabled={location.pathname === "/home/connections" || user.isLoading}>Connections</Nav.Link> : null }
+                <Nav.Link as={Link} to={"sample"} disabled={location.pathname === "/home/sample" || user.isLoading}>Sample</Nav.Link>
             </Nav>
             <Navbar.Collapse className="justify-content-end">
               <Nav.Link as={Button} onClick={handleLogout}>Logout</Nav.Link>

@@ -8,7 +8,7 @@ import swal from "sweetalert2";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styleTest from '../../CSS/Modules/Button.module.css';
-import { Container, Row, Col, Form, Alert, Card, Button } from "react-bootstrap";
+import { Container, Row, Col, Form, Alert, Card, Button, Modal, ModalBody, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { attemptLogin, attemptLoginAsync, resetAuth, userSelector } from "../../State/Slices/userSlice";
 
@@ -98,12 +98,12 @@ function Login(props) {
     }, [user]);
 
     return (
-        
+        <>
         <Container fluid className='border vh-100'>
             <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "10%", textAlign: "center"}}> 
                 <Col className='h-100'>
                     <Container className='h-100'>
-                        <Row><Col>RECON {userType} {userTypeRef.current} {user.error ? user.error : null} {user.isLoading ? "Loading" : null}</Col></Row>
+                        <Row><Col>RECON {/*userType*/} {/*userTypeRef.current*/} {/*user.error ? user.error : null*/} {user.isLoading ? "Loading" : null}</Col></Row>
                     </Container>
                 </Col>
             </Row>
@@ -154,7 +154,7 @@ function Login(props) {
                         <Row><Col><br/></Col></Row>
 
                         <Row as={Form.Group} controlId="formSubmission">
-                            <Col as={Button} md={{span: 2, offset: 3}} onClick={handleLogin} onKeyDown={() => console.log("KEY PRESS")}> Login </Col>
+                            <Col as={Button} md={{span: 2, offset: 3}} onClick={handleLogin} disabled={user.isLoading} > Login </Col>
                             <Col as={Button} md={{span: 2, offset: 2}}> Reset </Col>
                         </Row>
 
@@ -165,6 +165,11 @@ function Login(props) {
             </Row>
             
         </Container>
+
+        {/*<Modal fullscreen show={user.isLoading} style={{opacity: ".3"}}>
+            <ModalBody style={{display: "flex", alignItems: "center", justifyContent: "center", opacity: "90%"}}><Spinner/></ModalBody>
+    </Modal>*/}
+        </>
     )
 } 
 

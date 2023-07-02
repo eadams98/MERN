@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   Outlet,
@@ -13,8 +13,10 @@ import {
 import swal from "sweetalert2";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav } from "react-bootstrap";
+import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav, Modal, ModalBody, Spinner } from "react-bootstrap";
 import PrimaryNav from "./Navbar/PrimaryNav";
+import { useSelector } from "react-redux";
+import { userSelector } from "../../State/Slices/userSlice";
 
 function Home(props) {
 
@@ -22,6 +24,12 @@ function Home(props) {
     const [userErrorForm, setUserErrorForm] = useState({ name: "", password: ""});
     const navigate = useNavigate();
     const location = useLocation();
+    const user = useSelector(userSelector);
+
+    useEffect(() => {
+      console.log("refresh Page")
+      console.log(user)
+    }, [user])
 
     return (
         
@@ -43,6 +51,12 @@ function Home(props) {
                 
               </Col>
             </Row> 
+
+            {/* Hit or miss. Either have this here or have it in each page individually (BAD IDEA, REPETITVE) */}
+            {/* ISSUE: if i switch the pages too quickly, the loader will get stuck */}
+            {/*<Modal fullscreen show={user.isLoading} style={{opacity: ".3"}}>
+              <ModalBody style={{display: "flex", alignItems: "center", justifyContent: "center", opacity: "90%"}}><Spinner/></ModalBody>
+            </Modal>*/}
         </Container>
     )
 } 

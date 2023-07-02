@@ -7,7 +7,7 @@ const PageNotFound= () =>{
     const navigate = useNavigate();
     return(
             <Container fluid className="fullScreen" style={{ height: "100vh", backgroundColor: "white", border: "solid 3px", display: 'flex', alignItems: "center", justifyContent: "center"}}>
-                <Container style={{border: "solid", backgroundColor: "white"}}>
+                <div style={{border: "solid", backgroundColor: "white", width: "500px"}}>
                     <Row>
                         <Col><h1>404 Error</h1></Col>
                     </Row>
@@ -17,7 +17,7 @@ const PageNotFound= () =>{
                     <Row>
                         <Col><Button onClick={() => {navigate('/home') }}>back</Button></Col>
                     </Row>
-                </Container>
+                </div>
             </Container>
     )
 }

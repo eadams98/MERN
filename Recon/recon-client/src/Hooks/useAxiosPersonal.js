@@ -1,8 +1,8 @@
 import axiosRetry from "axios-retry";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "../API/axios";
-import { userSelector } from "../State/Slices/userSlice";
+import { setLoadingComplete, setLoadingInProgress, userSelector } from "../State/Slices/userSlice";
 import useRefreshToken from "./useRefreshToken";
 
 import { CancelToken } from 'axios';
@@ -16,6 +16,7 @@ const useAxiosPersonal = () => {
   const [token, setToken] = useState(user.user.token);
   const [tokenUpdated, setTokenUpdated] = useState(false);
   const axiosInstanceRef = useRef(null);
+  const dispatch = useDispatch()
   axiosInstanceRef.current = axios.create();
 
 
@@ -39,22 +40,37 @@ const useAxiosPersonal = () => {
 
     const requestIntercept = axiosInstanceRef.current.interceptors.request.use(
       (config) => {
+        dispatch( setLoadingInProgress())
         console.log(`token ${token}`);
-        if (token) {
+        console.log(`url = ${config.url}`)
+        const getContractorsRegex = /^\/trainee\/unregistered$/
+        const getTraineesRegex = /^\/contractor\/unregistered-to-school.*$/
+
+        const addAuthHeader = !getTraineesRegex.test(config.url) && !getContractorsRegex.test(config.url)
+        console.log(`add Auth = ${addAuthHeader}, url = ${config.url}`)
+
+        if (token && addAuthHeader) {
           console.log("config auth header");
           config.headers['Authorization'] = 'Bearer ' + token;
+          config.headers['Access-Control-Allow-Origin'] = "*";
+          config.headers['Access-Control-Allow-Headers'] = "X-Requested-With";
+        } else {
+          console.log("no config auth header");
+          delete config.headers['Authorization']
           config.headers['Access-Control-Allow-Origin'] = "*";
           config.headers['Access-Control-Allow-Headers'] = "X-Requested-With";
         }
         return config;
       },
       (error) => {
+        dispatch( setLoadingComplete())
         return Promise.reject(error);
       }
     );
 
     const responseIntercept = axiosInstanceRef.current.interceptors.response.use(
       (response) => {
+        dispatch( setLoadingComplete())
         return response;
       },
       async (error) => {
@@ -72,6 +88,7 @@ const useAxiosPersonal = () => {
             console.log('Error refreshing token:', err);
           }
         }
+        dispatch( setLoadingComplete())
         return Promise.reject(error);
       }
     );

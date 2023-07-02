@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react"
 import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap"
+import { useSelector } from "react-redux"
 import Swal from "sweetalert2"
 import useAxiosPersonal from "../../../../Hooks/useAxiosPersonal"
+import { userSelector } from "../../../../State/Slices/userSlice"
 
 const AddConnections = () => {
   // Hooks
   const axios = useAxiosPersonal()
+  const user = useSelector(userSelector);
 
   // variables
   const [form, setForm] = useState({
@@ -25,44 +28,6 @@ const AddConnections = () => {
   // useEffects
   useEffect(() => {
 
-    const getMyStudents = async () => {
-      setLoading(true)
-      try {
-        const resp = await axios('/get-my-jr-contractors')
-        console.log(resp.data)
-        setMyStudents(resp.data)
-        setDataOne(true)
-        //snapshots.SetSnapshot('profileForm', profileForm)
-      } catch (error) {
-        console.log(error)
-        setError(true)
-      }
-    }
-
-    const getAvailableContractor = async () => {
-      //setLoading(true)
-      try {
-        /*const resp = await setTimeout(() => {
-          setAvailableContractors([
-            {
-              "userID": "CONTRACTOR-001",
-              "name": "Contractor 1",
-              "email": "contractor.1@yahoo.com"
-            }
-          ])
-          setDataTwo(true)
-        }, 10000)*/
-        const resp = await axios('/get-all-contractors')
-        console.log(resp.data)
-        setAvailableContractors(resp.data)
-        setDataTwo(true)
-        //snapshots.SetSnapshot('profileForm', profileForm)
-      } catch (error) {
-        console.log(error)
-        setError(true)
-      }
-    }
-
     getMyStudents()
     getAvailableContractor()
   }, [])
@@ -70,28 +35,77 @@ const AddConnections = () => {
   useEffect(() => {
     if (dataOne && dataTwo)
       setLoading(false)
+      setDataOne(false)
+      setDataTwo(false)
   }, [dataOne, dataTwo])
   //http://localhost:4001/get-my-jr-contractors
 
   // methods
+
+  const getMyStudents = async () => {
+    //setLoading(true)
+    try {
+      const resp = await axios('/trainee/unregistered')
+      console.log(resp.data)
+      setMyStudents(resp.data)
+      //setDataOne(true)
+      //snapshots.SetSnapshot('profileForm', profileForm)
+    } catch (error) {
+      console.log(error)
+      //setError(true)
+    }
+  }
+
+  const getAvailableContractor = async () => {
+    //setLoading(true)
+    try {
+      /*const resp = await setTimeout(() => {
+        setAvailableContractors([
+          {
+            "userID": "CONTRACTOR-001",
+            "name": "Contractor 1",
+            "email": "contractor.1@yahoo.com"
+          }
+        ])
+        setDataTwo(true)
+      }, 10000)*/
+      const resp = await axios(`/contractor/unregistered-to-school?se=${user.user.email}`)
+      console.log(resp.data)
+      setAvailableContractors(resp.data)
+      //setDataTwo(true)
+      //snapshots.SetSnapshot('profileForm', profileForm)
+    } catch (error) {
+      console.log(error)
+      //setError(true)
+    }
+  }
+
   const updateForm = (e) => {
     const {name, value} = e.target
     setForm(oldForm => {return {...oldForm, [name]: value}})
   }
 
   const attemptToAddConnection = async () => {
-    setSubmitLoading(true)
+    //setSubmitLoading(true)
     
     let status
     let msg
     try {
-      const resp = await axios.post('/add-connection-to-self', form)
+      const resp = await axios.post(`/school/${user.user.id}/add-student?sid=${form.userIDToAdd}`)
       console.log(resp)
       msg = "Successfully added"
       status = 'success'
+      getMyStudents()
+      getAvailableContractor()
+      setForm(oldForm => {
+        return {
+          userIDToAdd: "",
+          contractorID: ""
+        }
+      })
     } catch (error) {
       console.log(error)
-      msg = error.response.data.message
+      msg = error.response.data.errorMessage
       status = "error"
     }
 
@@ -105,14 +119,21 @@ const AddConnections = () => {
     /*setTimeout(() => {
       setSubmitLoading(false)
     }, 5000)*/
-    setSubmitLoading(false)
+    //setSubmitLoading(false)
     
+  }
+
+  const disablebutton = () => {
+    console.log("HERE")
+    if (form.userIDToAdd == "" || form.contractorID == "")
+      return true
+    return false
   }
 
   if (error) {
     return <div style={{width: "100%"}}>ERROR</div> 
   } else {
-    if (loading) return <div style={{width: "100%"}}><Spinner /></div>
+    if (user.isLoading) return <div style={{display: "flex", alignItems: "center", justifyContent: "center", opacity: "50%"}}><div style={{width: "100%"}}><Spinner /></div></div>
     else { return (
       <> 
         { 
@@ -126,13 +147,14 @@ const AddConnections = () => {
         <Container style={{border: "solid red"}}>
           
           {/*<Row style={{border: "solid green"}}><Col>{tab}</Col><Col><select/></Col></Row>*/}
+          
           <Row style={{border: "solid green"}}>
             <Col>Student</Col>
             <Col>
               <Form.Select name="userIDToAdd" value={form.userIDToAdd} onChange={updateForm}>
                 <option key="">--Select One--</option>
                 {
-                  myStudents.map((student, idx) => <option key={idx} value={student.userID}>{`${student.name} - ${student.email}`}</option> )
+                  myStudents.map((student, idx) => <option key={idx} value={student.email}>{`${student.firstName} ${student.lastName} - ${student.email}`}</option> )
                 }
               </Form.Select>
             </Col>
@@ -143,12 +165,12 @@ const AddConnections = () => {
               <Form.Select name="contractorID" value={form.contractorID} onChange={updateForm}>
                 <option key="">--Select One--</option>
                 {
-                  availableContractors.map((contractor, idx) => <option key={idx} value={contractor.userID}>{`${contractor.name} - ${contractor.email}`}</option> )
+                  availableContractors.map((contractor, idx) => <option key={idx} value={contractor.email}>{`${contractor.firstName} ${contractor.lastName} - ${contractor.email}`}</option> )
                 }
               </Form.Select>
             </Col>
           </Row>
-          <Row style={{border: "solid green"}}><Col><Button onClick={attemptToAddConnection}>Submit</Button></Col></Row>
+          <Row style={{border: "solid green"}}><Col><Button disabled={disablebutton()} onClick={attemptToAddConnection}>Submit</Button></Col></Row>
         </Container>
       </>
     )}

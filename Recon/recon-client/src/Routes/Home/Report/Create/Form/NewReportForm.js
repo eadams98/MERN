@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { userSelector } from "../../../../../State/Slices/userSlice";
-import { Col, Container, Form, FormGroup, Row, Button, Spinner, FormLabel } from "react-bootstrap"
+import { Col, Container, Form, FormGroup, Row, Button, Spinner, FormLabel, Modal, ModalBody } from "react-bootstrap"
 import Swal from "sweetalert2";
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 
@@ -41,10 +41,8 @@ const NewReportForm = ({ userID, resetUserID }) => {
   let resetReportForm = (e) => {
     setReportForm({
       grade: "",
-      week: {
-        start: "",
-        end: ""
-      },
+      weekStartDate: "",
+      weekEndDate: "",
       description: ""
     })
     setWeekly("")
@@ -132,14 +130,19 @@ const NewReportForm = ({ userID, resetUserID }) => {
 
   if (loading) return <Spinner /> 
   else { return (
+    <>
+    <Modal fullscreen show={user.isLoading} style={{opacity: ".3"}}>
+      <ModalBody style={{display: "flex", alignItems: "center", justifyContent: "center", opacity: "90%"}}><Spinner/></ModalBody>
+    </Modal>
     <Form as={Container} fluid style={{ backgroundColor: "grey", height: "75vh", overflow: "auto", position: "relative" }}>
       <Form.Group className="mb-3" controlId="reportFormDate">
         <Row>
           <Col md={1} style={{ display: "flex" }}>
             <FormLabel onClick={resetUserID} style={{ margin: "auto", textAlign: "center", cursor: "pointer" }}>{`< USERS`}</FormLabel>
           </Col>
-          <Col md={3} style={{textAlign:"right"}}><Form.Label>{`Week:`}</Form.Label></Col>
-          <Col style={{textAlign:"left"}}><Form.Label>{`${reportForm.weekStartDate}${reportForm.weekStartDate ? ' - ' : ''}${reportForm.weekEndDate}`}</Form.Label></Col>
+        </Row>
+        <Row>
+          <Col style={{textAlign:"center"}}><Form.Label>{`Week:${reportForm.weekStartDate}${reportForm.weekStartDate ? ' - ' : ''}${reportForm.weekEndDate}`}</Form.Label></Col>
         </Row>
         <Form.Control name="week" type="week" onChange={updateReportForm} value={weekly}/>
       </Form.Group>
@@ -196,18 +199,19 @@ const NewReportForm = ({ userID, resetUserID }) => {
       <Form.Group style={{position: "absolute", bottom: "0"}}>
         <Row>
           <Col>
-            <Form.Control as={Button} onClick={submitForm} disabled={!validForm} >
+            <Form.Control as={Button} onClick={submitForm} disabled={!validForm || user.isLoading} >
               Submit
             </Form.Control>
           </Col>
           <Col>
-            <Form.Control as={Button} onClick={resetReportForm} disabled={!reportForm.description && !reportForm.grade && !reportForm.weekStartDate && !reportForm.weekEndDate} >
+            <Form.Control as={Button} onClick={resetReportForm} disabled={(!reportForm.description && !reportForm.grade && !reportForm.weekStartDate && !reportForm.weekEndDate) || user.isLoading} >
               Reset
             </Form.Control>
           </Col>
         </Row>
       </Form.Group>
-    </Form>)
+    </Form>
+  </>)
   }
 }
 

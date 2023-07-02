@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import { Button, Card, Col, Container, Form, Modal, OverlayTrigger, Row, Spinner, Table, Tooltip } from "react-bootstrap"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import useAxiosPersonal from "../../../Hooks/useAxiosPersonal"
 import useSnapshots from "../../../Hooks/useSnapshots"
-import { userSelector } from "../../../State/Slices/userSlice"
+import { setLoadingComplete, setLoadingInProgress, userSelector } from "../../../State/Slices/userSlice"
 import defaultProfilePicture from '../../../Default-Profile-Picture.jpeg';
 import Swal from "sweetalert2"
 import ProfileUploadModal from "./ProfileUploadModal"
@@ -13,6 +13,7 @@ const ProfileForm = () => {
   const axios = useAxiosPersonal()
   const snapshots = useSnapshots()
   const user = useSelector(userSelector)
+  const dispatch = useDispatch();
 
   // Variables
   const [loading, setLoading] = useState(true)
@@ -29,23 +30,53 @@ const ProfileForm = () => {
   const [profileModal, setProfileModal] = useState(false)
 
   // Effects
+  
   useEffect(() => {
+    const role = user.user.roles[0].authority
+    const id = user.user.id
+    const getSchoolStudents = async () => {
+      setLoading(true)
+      try {
+        const resp = await axios(`/school/${id}/students`)
+        console.log(resp.data)
+        setProfileForm(prevState => {
+          return {
+          ...prevState,
+          connections: resp.data
+         }
+      })
+        //setDataOne(true)
+        //snapshots.SetSnapshot('profileForm', profileForm)
+      } catch (error) {
+        console.log(error)
+        //setError(true)
+      }
+    }
     const getProfileDetails = async () => {
       setLoading(true)
       try {
         //console.log(`role = ${user.user.roles[0].authority}`)
-        const role = user.user.roles[0].authority
-        const id = user.user.id
         const resp = await axios(`${role}/${id}`)
-        const { firstName, lastName, trainees, email } = resp.data
-        const profileForm = {
-          name: {
-            first: firstName,
-            last: lastName
-          },
-          email: email,
-          role: role,
-          connections: trainees
+        const { firstName, lastName, trainees, email, schoolName } = resp.data
+        let profileForm
+        switch (role) {
+          case "school":
+            profileForm = {
+              name: schoolName,
+              email: email,
+              role: role,
+            }
+            break;
+          default:
+            profileForm = {
+              name: {
+                first: firstName,
+                last: lastName
+              },
+              email: email,
+              role: role,
+              connections: trainees
+            }
         }
   
         setProfileForm(profileForm)
@@ -58,9 +89,11 @@ const ProfileForm = () => {
       setLoading(false)
     }
     getProfileDetails()
+    if (role == "school") { getSchoolStudents() }
   }, [])
 
   useEffect(() => {
+    console.log(user)
     if (!edit && !snapshots.Validate(profileForm, 'profileForm')) {
       setProfileForm(snapshots.GetSnapshot('profileForm'))
       console.log("snapshot reset")
@@ -144,10 +177,16 @@ const ProfileForm = () => {
           {/* right half. form fields */}
           <Col>
             <Container fluid style={{ height: "100%", border: "solid red"}}>
-              <Row style={{ height: "33.4%", border: "solid green"}}>
-                <Col>First: <Form.Control name='first' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.first} style={{ textAlign: "center" }} /> </Col>
-                <Col>Last: <Form.Control name='last' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.last} style={{ textAlign: "center" }} /> </Col>
-              </Row>
+              { user.user.roles[0].authority != "school" ?
+                <Row style={{ height: "33.4%", border: "solid green"}}>
+                  <Col>First: <Form.Control name='first' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.first} style={{ textAlign: "center" }} /> </Col>
+                  <Col>Last: <Form.Control name='last' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.last} style={{ textAlign: "center" }} /> </Col>
+                </Row>
+                :
+                <Row style={{ height: "33.4%", border: "solid green"}}>
+                  <Col>School: <Form.Control name='first' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name} style={{ textAlign: "center" }} /> </Col>
+                </Row>
+              }
 
               <Row style={{ height: "33.3%", border: "solid green"}}>
                 <Col>Email: <Form.Control name='email' onChange={updateProfileForm} disabled={!edit} value={profileForm?.email} style={{ textAlign: "center" }} /> </Col>
@@ -160,12 +199,11 @@ const ProfileForm = () => {
           </Col>
         </Row>
 
-        <Row style={{ height: "50%", border: "solid blue"}}>
-          <Col>
-            <Container fluid style={{ height: "100%", border: "solid red"}}>
-              <Row style={{height: "10%", border: "solid"}}><Col></Col></Row>
-              <Row style={{height: "70%", border: "solid"}}>
-                <Col style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <Row style={{ height: "50%", border: "solid blue", overflow: "hidden"}}>
+          <Col style={{ height: "100%" }}>
+            <div style={{ height: "100%", border: "solid red"}}>
+              <div style={{height: "10%", border: "solid"}}></div>
+              <div style={{height: "70%", border: "solid", overflow: "auto"}}>
                   <Table striped bordered hover style={{backgroundColor: "white", height: "90%", width: "100%"}}>
                     <thead>
                       <tr>
@@ -192,9 +230,9 @@ const ProfileForm = () => {
                       }
                     </tbody>
                   </Table>
-                </Col>
-              </Row>
-              <Row style={{height: "20%", display: "flex", alignItems: "center"}}>
+                
+              </div>
+              <div style={{height: "20%", display: "flex", alignItems: "center"}}>
                 {
                   !edit ? <Col md={{span: 3, offset: 1}} > <Button onClick={toggleEdit} style={{ width: "100%"}}>EDIT</Button> </Col> : null
                 }
@@ -206,8 +244,8 @@ const ProfileForm = () => {
                   </> : null
                 }
                 
-              </Row>
-            </Container>
+              </div>
+            </div>
           </Col>
         </Row>
         
