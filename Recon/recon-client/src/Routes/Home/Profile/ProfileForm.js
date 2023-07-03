@@ -28,6 +28,7 @@ const ProfileForm = () => {
   })
   const [edit, setEdit] = useState(false)
   const [profileModal, setProfileModal] = useState(false)
+  const [profilePicURL, setProfilePicURL] = useState({imageSrc: "", imageHash: Math.random()})
 
   // Effects
   
@@ -88,9 +89,25 @@ const ProfileForm = () => {
       }
       setLoading(false)
     }
+    const getProfilePictureURL = async () => {
+      try {
+        const resp = await axios(`/bucket/picture`)
+        //const encodedUrl = encodeURIComponent(resp.data);
+        const data = resp.data;
+        setProfilePicURL({imageSrc: data, imageHash: Math.random()})
+        console.log(resp)
+      } catch (err) {
+        console.log(err)
+      }
+    }
     getProfileDetails()
+    getProfilePictureURL()
     if (role == "school") { getSchoolStudents() }
   }, [])
+
+  useEffect(() => {
+    console.log(profilePicURL)
+  }, [profilePicURL])
 
   useEffect(() => {
     console.log(user)
@@ -125,6 +142,11 @@ const ProfileForm = () => {
     const snapshot = snapshots.GetSnapshot('profileForm')
   }
 
+  const updateProfilePicUrl = (value) => {
+    console.log("GOGOGO")
+    setProfilePicURL({imageSrc: value, imageHash:  Math.random()})
+  }
+
   const submitProfileForm = async () => {
     let message, status
     try {
@@ -154,7 +176,7 @@ const ProfileForm = () => {
   if(loading) { return <div style={{width: "100%"}}><Spinner /></div>}
   else {return (
     <> 
-      <ProfileUploadModal closeModal={closeModal} showProfileModal={profileModal}/>
+      <ProfileUploadModal closeModal={closeModal} showProfileModal={profileModal} updateProfilePicUrl={updateProfilePicUrl}/>
 
       <Container fluid style={{ height: "80%", backgroundColor: "grey"}}>
         <Row style={{ height: "50%", border: "solid red"}}>
@@ -168,7 +190,9 @@ const ProfileForm = () => {
                   <Card.Img 
                     onClick={() => {setProfileModal(true); console.log(profileModal)}}
                     style={{ width: "100%", height: "100%"}}
-                    src={ user?.user?.profilePicture ? user.user.profilePicture : defaultProfilePicture}
+                    //src={ user?.user?.profilePicture ? user.user.profilePicture : defaultProfilePicture}
+                    src={ profilePicURL.imageSrc !== "" ?`${profilePicURL.imageSrc}?random=${new Date().getSeconds()}` : defaultProfilePicture}
+                    key={profilePicURL.imageHash}
                   />
                 </OverlayTrigger>
             </Card>

@@ -45,7 +45,7 @@ const  userSlice = createSlice({
       console.log(state.user)
     },
     updateUserProfilePhote: (state, {payload}) => {
-      state.user.profilePicture = `http://localhost:4001/${payload}`
+      state.user.pictureURL = payload
     },
     login: (state) => {
       state.isLoading = true

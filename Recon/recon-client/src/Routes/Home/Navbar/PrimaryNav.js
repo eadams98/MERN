@@ -37,7 +37,7 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
         <Navbar variant="dark" bg="dark" style={{height: "100%", width: "100%"}}>
           <Container style={{ height: "100%"}}>
             <Card style={{ height: "100%", width: "10%"}}>
-              <CardImg src={user.user?.profilePicture ? user.user.profilePicture : defaultProfilePicture} style={{height: "100%", width: "100%"}}/>
+              <CardImg src={user.user?.pictureURL ? user.user.pictureURL : defaultProfilePicture} style={{height: "100%", width: "100%"}}/>
             </Card>
             <Navbar.Brand as={Link} to={"/home"} >RECON</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
