@@ -6,12 +6,17 @@ import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 import _ from 'lodash'
 import useSnapshots from "../../../../../Hooks/useSnapshots";
 import Swal from "sweetalert2";
+import { LOCAL_REPORT_URL } from "../../../../../Utilities/URLs";
+//import ReportService from "../../../../../Services/ReportService";
 
-const SelectUserWeek = ({userID, role, resetParent}) => {
+const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
   //Hooks
   const axios = useAxiosPersonal()
   const snapshots = useSnapshots()
   const user = useSelector(userSelector)
+
+  // Services
+  //const reportService = ReportService()
 
   //Variables
   const [reportYear, setReportYear] = useState("")
@@ -52,11 +57,15 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
   const submitRevision = async () => {
     setLoading(true)
     try {
-      const response = await axios.put(`/update-report`, reportForm)
+      console.log(reportForm)
+      const isRevisionByTrainee = role === "trainee" ? true : false
+      const response = await axios({ baseURL: LOCAL_REPORT_URL, url:`contractor/update-report?revision=${isRevisionByTrainee}`, method: "put", data: reportForm})
       const updatedSnapshot = {
         ...snapshots.GetSnapshot('reportForm'),
         "grade": reportForm.grade,
-        "description": reportForm.description
+        "description": reportForm.description,
+        "title": reportForm.title,
+        "rebuttal": reportForm.rebuttal
       }
       snapshots.SetSnapshot('reportForm', updatedSnapshot)
       setInRevise(false)
@@ -88,15 +97,18 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
       console.log(role)
       let response;
       const defaultContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
+        rebuttal: "",
+        title: ""
       }
       const defaultJrContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
-        revision: "",
+        rebuttal: "",
+        title: ""
       }
 
       try {
@@ -104,12 +116,13 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
         case "contractor": 
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
+          //response = await reportService.contractorGetReportYearsOfMyUser(user.user.email, userID)
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
           break
         case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL:"http://localhost:4002", url: `trainee/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/years?by=${contractorEmail}&for=${user.user.email}`, method: "get"})
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -141,11 +154,11 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
 
       switch(role.toLowerCase()) {
         case "contractor": 
-          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/get-report?by=${user.user.email}&for=${userID}&weekStart=${reportWeek.split(" - ")[0]}&weekEnd=${reportWeek.split(" - ")[1]}`, method: "get"})
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/get-report?by=${user.user.email}&for=${userID}&weekStart=${reportWeek.split(" - ")[0]}&weekEnd=${reportWeek.split(" - ")[1]}`, method: "get"})
           //await axios.get(`get-contractor-report/years?by=${user.user.email}&for=${userID}`, { week: reportWeek, createdFor: userID })
           break
-        case "jr. contractor":
-          response = await axios.post(`get-jr-contractor-report`, { week: reportWeek })
+        case "trainee":
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/get-report?by=${contractorEmail}&for=${user.user.email}&weekStart=${reportWeek.split(" - ")[0]}&weekEnd=${reportWeek.split(" - ")[1]}`, method: "get"})
           break
         default:
           //setReportForm(defaultContractorReportForm)
@@ -154,9 +167,11 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
       console.log(response)
       const updatedReportForm = {
         ...reportForm,
-        reportID: response.data._id,
+        reportId: response.data.reportId,
         description: response.data.description,
         grade: response.data.grade,
+        title: response.data.title,
+        rebuttal: response.data.rebuttal
       }
       setReportForm(updatedReportForm)
       snapshots.SetSnapshot('reportForm', updatedReportForm)
@@ -180,26 +195,30 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
       console.log(role)
       let response;
       const defaultContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
+        rebuttal: "",
+        title: ""
       }
       const defaultJrContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
-        revision: "",
+        rebuttal: "",
+        title: ""
       }
       switch(role.toLowerCase()) {
         case "contractor": 
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/report/months?by=${user.user.email}&for=${userID}&year=${reportYear}`, method: "get"})
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/months?by=${user.user.email}&for=${userID}&year=${reportYear}`, method: "get"})
           break
-        case "jr. contractor":
+        case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          //response = await axios.get(`get-my-report-weeks`)
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/months?by=${contractorEmail}&for=${user.user.email}&year=${reportYear}`, method: "get"})
+
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -223,26 +242,29 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
       console.log(role)
       let response;
       const defaultContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
+        rebuttal: "",
+        title: ""
       }
       const defaultJrContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
-        revision: "",
+        rebuttal: "",
+        title: ""
       }
       switch(role.toLowerCase()) {
         case "contractor": 
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL:"http://localhost:4002", url: `contractor/report/weeks?by=${user.user.email}&for=${userID}&year=${reportYear}&month=${reportMonth}`, method: "get"})
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/weeks?by=${user.user.email}&for=${userID}&year=${reportYear}&month=${reportMonth}`, method: "get"})
           break
-        case "jr. contractor":
+        case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          //response = await axios.get(`get-my-report-weeks`)
+          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/weeks?by=${contractorEmail}&for=${user.user.email}&year=${reportYear}&month=${reportMonth}`, method: "get"})
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -341,7 +363,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
             <Row>
               <Col>
                 {
-                  inRevise ?
+                  inRevise && role == "contractor"?
                     <textarea 
                       name="description"
                       value={reportForm.description}
@@ -357,7 +379,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
 
           <div style={{height: "30%", border: "solid"}}>
             {
-              role == "JR. CONTRACTOR" ?
+              role == "trainee" ?
                 <>
                   <Row style={{height: "20%", border: "solid"}}><Col>Revisions</Col></Row>
                   <Row style={{height: "80%", border: "solid green"}}>
@@ -365,14 +387,14 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
                       {
                         inRevise ?
                           <textarea
-                            name="revision"
-                            value={reportForm.revision}
+                            name="rebuttal"
+                            value={reportForm.rebuttal}
                             onChange={updateReportForm}
                             type="textarea"
                             style={{ width: "100%", height: "100%", resize: "none"}}          
                           />
                           :
-                          null
+                          <Form.Label style={{width: "100%"}}>{reportForm.rebuttal}</Form.Label>
                       }
                     </Col>
                   </Row>

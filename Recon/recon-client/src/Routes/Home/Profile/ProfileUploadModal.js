@@ -41,7 +41,7 @@ const ProfileUploadModal = ({ closeModal, showProfileModal, updateProfilePicUrl}
       const resp = await axios.post('/bucket/picture', formData)
       console.log(resp)
       message = resp.data.data
-      status = resp.data.status
+      status = 'success'
       console.log(message)
       dispatch(await (updatePicture(`${resp.data}?random=${new Date().getSeconds()}`)))
       updateProfilePicUrl(resp.data)
@@ -49,9 +49,10 @@ const ProfileUploadModal = ({ closeModal, showProfileModal, updateProfilePicUrl}
     } catch (error) {
       console.log(error)
       message = error.response.data.message
-      status = error.response.data.status
+      status = 'error'
     }
 
+    
     Swal.fire({
       position: 'top',
       icon: status === 'success' ? 'success' : 'error',

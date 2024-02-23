@@ -18,13 +18,12 @@ const ProfileForm = () => {
   // Variables
   const [loading, setLoading] = useState(true)
   const [profileForm, setProfileForm] = useState({
-    name: {
-      first: "",
-      last: ""
-    },
+    firstName: "",
+    lastName: "",
     email: "",
     role: "",
-    connections: []
+    connections: [],
+    id: ""
   })
   const [edit, setEdit] = useState(false)
   const [profileModal, setProfileModal] = useState(false)
@@ -35,6 +34,7 @@ const ProfileForm = () => {
   useEffect(() => {
     const role = user.user.roles[0].authority
     const id = user.user.id
+    console.log(`profilePicURL = ${profilePicURL.imageSrc}`)
     const getSchoolStudents = async () => {
       setLoading(true)
       try {
@@ -47,7 +47,7 @@ const ProfileForm = () => {
          }
       })
         //setDataOne(true)
-        //snapshots.SetSnapshot('profileForm', profileForm)
+        snapshots.SetSnapshot('profileForm', profileForm)
       } catch (error) {
         console.log(error)
         //setError(true)
@@ -59,29 +59,28 @@ const ProfileForm = () => {
         //console.log(`role = ${user.user.roles[0].authority}`)
         const resp = await axios(`${role}/${id}`)
         const { firstName, lastName, trainees, email, schoolName } = resp.data
-        let profileForm
+        let profileFormLocal
         switch (role) {
           case "school":
-            profileForm = {
-              name: schoolName,
+            profileFormLocal = {
+              ...profileForm,
+              schoolName: schoolName,
               email: email,
               role: role,
             }
             break;
           default:
-            profileForm = {
-              name: {
-                first: firstName,
-                last: lastName
-              },
+            profileFormLocal = {
+              firstName: firstName,
+              lastName: lastName,
               email: email,
               role: role,
-              connections: trainees
+              connections: trainees,
             }
         }
   
-        setProfileForm(profileForm)
-        snapshots.SetSnapshot('profileForm', profileForm)
+        setProfileForm(profileFormLocal)
+        //snapshots.SetSnapshot('profileForm', profileFormLocal)
         console.log(`data = ${resp.data}`)
         console.log(resp)
       } catch (error) {
@@ -93,7 +92,7 @@ const ProfileForm = () => {
       try {
         const resp = await axios(`/bucket/picture`)
         //const encodedUrl = encodeURIComponent(resp.data);
-        const data = resp.data;
+        const data = resp.data === "success"? "" : resp.data
         setProfilePicURL({imageSrc: data, imageHash: Math.random()})
         console.log(resp)
       } catch (err) {
@@ -110,7 +109,14 @@ const ProfileForm = () => {
   }, [profilePicURL])
 
   useEffect(() => {
+    // BAD AS I WANT TO ONLY UPDATE SNAPSHOT ONCE SUCCESS FROM SUBMIT
+    if (!edit) { snapshots.SetSnapshot('profileForm', profileForm) }
+  }, [profileForm])
+
+  useEffect(() => {
     console.log(user)
+    console.log(`profileForm below`)
+    console.log(snapshots.GetSnapshot('profileForm'))
     if (!edit && !snapshots.Validate(profileForm, 'profileForm')) {
       setProfileForm(snapshots.GetSnapshot('profileForm'))
       console.log("snapshot reset")
@@ -120,7 +126,7 @@ const ProfileForm = () => {
   // Methods
   const updateProfileForm = (e) => {
     const { name, value } = e.target
-    if (name === 'first' || name === 'last') {
+    /*if (name === 'first' || name === 'last') {
       setProfileForm({
         ...profileForm,
         name: {
@@ -128,12 +134,12 @@ const ProfileForm = () => {
           [name]: value
         }
       })
-    } else {
+    } else {*/
       setProfileForm({
         ...profileForm,
         [name]: value
       })
-    }
+    //}
     
   }
 
@@ -149,15 +155,18 @@ const ProfileForm = () => {
 
   const submitProfileForm = async () => {
     let message, status
+    const role = user.user.roles[0].authority
+    const id = user.user.id
     try {
-      const resp = await axios.put('/update-profile', profileForm)
+      const resp = await axios.put(`${role}/${id}`, profileForm)
       console.log(resp)
-      message = resp.data.data
-      status = resp.data.status
+      message = resp.data
+      status = "success"
+      snapshots.SetSnapshot('profileForm', profileForm)
     } catch (error) {
       console.log(error)
       message = error.response.data.message
-      status = error.response.data.status
+      status = "error"
     }
 
     Swal.fire({
@@ -203,12 +212,12 @@ const ProfileForm = () => {
             <Container fluid style={{ height: "100%", border: "solid red"}}>
               { user.user.roles[0].authority != "school" ?
                 <Row style={{ height: "33.4%", border: "solid green"}}>
-                  <Col>First: <Form.Control name='first' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.first} style={{ textAlign: "center" }} /> </Col>
-                  <Col>Last: <Form.Control name='last' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name.last} style={{ textAlign: "center" }} /> </Col>
+                  <Col>First: <Form.Control name='firstName' onChange={updateProfileForm} disabled={!edit} value={profileForm?.firstName} style={{ textAlign: "center" }} /> </Col>
+                  <Col>Last: <Form.Control name='lastName' onChange={updateProfileForm} disabled={!edit} value={profileForm?.lastName} style={{ textAlign: "center" }} /> </Col>
                 </Row>
                 :
                 <Row style={{ height: "33.4%", border: "solid green"}}>
-                  <Col>School: <Form.Control name='first' onChange={updateProfileForm} disabled={!edit} value={profileForm?.name} style={{ textAlign: "center" }} /> </Col>
+                  <Col>School: <Form.Control name='schoolName' onChange={updateProfileForm} disabled={!edit} value={profileForm?.schoolName} style={{ textAlign: "center" }} /> </Col>
                 </Row>
               }
 

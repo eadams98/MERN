@@ -4,6 +4,7 @@ import { userSelector } from "../../../../../State/Slices/userSlice";
 import { Col, Container, Form, FormGroup, Row, Button, Spinner, FormLabel, Modal, ModalBody } from "react-bootstrap"
 import Swal from "sweetalert2";
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
+import { LOCAL_REPORT_URL } from "../../../../../Utilities/URLs";
 
 const NewReportForm = ({ userID, resetUserID }) => {
 
@@ -100,7 +101,7 @@ const NewReportForm = ({ userID, resetUserID }) => {
 
     try {
       //const response = await axios.post('/contractor/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
-      const response = await axios({ baseURL:"http://localhost:4002", url: "/contractor/create-report/", method: "post", data: sendForm})
+      const response = await axios({ baseURL: LOCAL_REPORT_URL, url: "/contractor/create-report/", method: "post", data: sendForm})
       data = response.data
       status = 'success'
       console.log(response)
