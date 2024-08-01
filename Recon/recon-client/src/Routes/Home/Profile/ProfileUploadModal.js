@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from 'react';
 import { Button, Col, Container, Modal, Row, } from "react-bootstrap"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark } from '@fortawesome/free-solid-svg-icons'

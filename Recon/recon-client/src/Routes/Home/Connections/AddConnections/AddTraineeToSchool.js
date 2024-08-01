@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
@@ -94,3 +95,16 @@ const AddTraineeToSchool = () => {
 }
 
 export default AddTraineeToSchool
+
+/*
+{
+    "reportId": 1,
+    "title": "title",
+    "description": "description",
+    "rebuttal": "",
+    "grade": "A+",
+    "submissionDate": "1998-05-15",
+    "weekStartDate": "1998-05-17",
+    "weekEndDate": "1998-05-20"
+}
+*/
