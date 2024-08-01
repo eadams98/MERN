@@ -7,6 +7,7 @@ functions = "Recon/recon-client/netlify/functions"
 [build.environment]
 NODE_ENV = "production"
 CI = "false"
+NODE_VERSION = "12.22.0"
 
 # The following redirect is intended for use with most SPAs that handle
 # routing internally.
