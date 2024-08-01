@@ -1,3 +1,13 @@
+[build]
+base = "Recon/recon-client"
+command = "npm run build"
+publish = "Recon/recon-client/build"
+functions = "Recon/recon-client/netlify/functions"
+
+[build.environment]
+NODE_ENV = "production"
+CI = "false"
+
 # The following redirect is intended for use with most SPAs that handle
 # routing internally.
 [[redirects]]
@@ -10,3 +20,4 @@
   for = "/*"
     [headers.values]
     Access-Control-Allow-Origin = "*"
+
