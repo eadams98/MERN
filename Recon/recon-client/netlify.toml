@@ -1,8 +1,8 @@
 [build]
-base = "Recon/recon-client"
+base = "/"
 command = "npm run build"
-publish = "Recon/recon-client/build"
-functions = "Recon/recon-client/netlify/functions"
+publish = "/build"
+functions = "/netlify/functions"
 
 [build.environment]
 NODE_ENV = "production"
