@@ -8,7 +8,14 @@ import _ from 'lodash'
 import useSnapshots from "../../../../../Hooks/useSnapshots";
 import Swal from "sweetalert2";
 import { LOCAL_REPORT_URL } from "../../../../../Utilities/URLs";
-//import ReportService from "../../../../../Services/ReportService";
+import {
+  finalizeReport,
+  createTraineeRetort,
+  getSchoolReport,
+  getSchoolReportYears,
+  getSchoolReportMonths,
+  getSchoolReportWeeks,
+} from "../../../../../Services/reportApi";
 
 const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
   //Hooks
@@ -32,6 +39,8 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
   const [reportForm, setReportForm] = useState({})
   const [inRevise, setInRevise] = useState(false)
   const [loading, setLoading] = useState(true)
+  /** Draft text for POST /trainee/create-retort (one retort per report) */
+  const [retortDraft, setRetortDraft] = useState("")
   const GRADES = [
     "A+", "A", "A-",
     "B+", "B", "B-",
@@ -53,6 +62,61 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
   const updateReportForm = (e) => {
     const { name, value } = e.target
     setReportForm((prevState) => {return { ...prevState, [name]: value }})
+  }
+
+  const parseWeekRange = () => {
+    const parts = (reportWeek || "").split(" - ")
+    if (parts.length < 2) return null
+    return { weekStart: parts[0].trim(), weekEnd: parts[1].trim() }
+  }
+
+  const handleFinalizeRating = async () => {
+    const wr = parseWeekRange()
+    if (!wr || role?.toLowerCase() !== "contractor") return
+    setLoading(true)
+    try {
+      const res = await finalizeReport(axios, LOCAL_REPORT_URL, {
+        byEmail: user.user.email,
+        forEmail: userID,
+        weekStart: wr.weekStart,
+        weekEnd: wr.weekEnd,
+      })
+      setReportForm((prev) => ({
+        ...prev,
+        isFinalized: res.data.isFinalized,
+        finalizedAt: res.data.finalizedAt,
+      }))
+      Swal.fire({ position: "top", icon: "success", timer: 2000, text: "Rating finalized." })
+    } catch (e) {
+      const msg = e.response?.data?.errorMessage ?? e.message ?? "Could not finalize."
+      Swal.fire({ position: "top", icon: "error", timer: 2500, text: msg })
+    }
+    setLoading(false)
+  }
+
+  const handleSubmitTraineeRetort = async () => {
+    const wr = parseWeekRange()
+    if (!wr || role?.toLowerCase() !== "trainee" || !retortDraft.trim()) return
+    setLoading(true)
+    try {
+      const res = await createTraineeRetort(axios, LOCAL_REPORT_URL, {
+        content: retortDraft.trim(),
+        sentByEmail: contractorEmail,
+        sentForEmail: user.user.email,
+        weekStartDate: wr.weekStart,
+        weekEndDate: wr.weekEnd,
+      })
+      setReportForm((prev) => ({
+        ...prev,
+        retortContent: res.data.retortContent ?? retortDraft.trim(),
+      }))
+      setRetortDraft("")
+      Swal.fire({ position: "top", icon: "success", timer: 2000, text: "Retort saved." })
+    } catch (e) {
+      const msg = e.response?.data?.errorMessage ?? e.message ?? "Could not save retort."
+      Swal.fire({ position: "top", icon: "error", timer: 2500, text: msg })
+    }
+    setLoading(false)
   }
 
   const submitRevision = async () => {
@@ -102,14 +166,18 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
         grade: "",
         description: "",
         rebuttal: "",
-        title: ""
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
       const defaultJrContractorReportForm = {
         reportId: "",
         grade: "",
         description: "",
         rebuttal: "",
-        title: ""
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
 
       try {
@@ -124,6 +192,11 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
           response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/years?by=${contractorEmail}&for=${user.user.email}`, method: "get"})
+          break
+        case "school":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await getSchoolReportYears(axios, LOCAL_REPORT_URL, contractorEmail, userID)
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -148,42 +221,73 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
   }, [])
 
   useEffect(() => {
-    //contractor/get-report?by=contractor.2@yahoo.com&for=trainee.2@yahoo.com&weekStart=1998-05-17&weekEnd=1998-05-20
     const getReport = async () => {
-      let response
+      const wr = parseWeekRange()
+      if (!wr) return
       setLoading(true)
 
-      switch(role.toLowerCase()) {
-        case "contractor": 
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/get-report?by=${user.user.email}&for=${userID}&weekStart=${reportWeek.split(" - ")[0]}&weekEnd=${reportWeek.split(" - ")[1]}`, method: "get"})
-          //await axios.get(`get-contractor-report/years?by=${user.user.email}&for=${userID}`, { week: reportWeek, createdFor: userID })
-          break
-        case "trainee":
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/get-report?by=${contractorEmail}&for=${user.user.email}&weekStart=${reportWeek.split(" - ")[0]}&weekEnd=${reportWeek.split(" - ")[1]}`, method: "get"})
-          break
-        default:
-          //setReportForm(defaultContractorReportForm)
-      }
-     
-      console.log(response)
-      const updatedReportForm = {
-        ...reportForm,
-        reportId: response.data.reportId,
-        description: response.data.description,
-        grade: response.data.grade,
-        title: response.data.title,
-        rebuttal: response.data.rebuttal
-      }
-      setReportForm(updatedReportForm)
-      snapshots.SetSnapshot('reportForm', updatedReportForm)
-
-      setTimeout(()=> {
+      let response
+      try {
+        switch (role.toLowerCase()) {
+          case "contractor":
+            response = await axios({
+              baseURL: LOCAL_REPORT_URL,
+              url: `contractor/get-report?by=${encodeURIComponent(user.user.email)}&for=${encodeURIComponent(userID)}&weekStart=${wr.weekStart}&weekEnd=${wr.weekEnd}`,
+              method: "get",
+            })
+            break
+          case "trainee":
+            response = await axios({
+              baseURL: LOCAL_REPORT_URL,
+              url: `trainee/get-report?by=${encodeURIComponent(contractorEmail)}&for=${encodeURIComponent(user.user.email)}&weekStart=${wr.weekStart}&weekEnd=${wr.weekEnd}`,
+              method: "get",
+            })
+            break
+          case "school":
+            response = await getSchoolReport(
+              axios,
+              LOCAL_REPORT_URL,
+              contractorEmail,
+              userID,
+              wr.weekStart,
+              wr.weekEnd
+            )
+            break
+          default:
+            setLoading(false)
+            return
+        }
+      } catch (error) {
+        console.log(error)
+        const msg =
+          error.response?.data?.errorMessage ??
+          "This report is not visible yet (contractor may not have finalized it)."
+        Swal.fire({ position: "top", icon: "info", timer: 3000, text: msg })
         setLoading(false)
-      },10000)
+        return
+      }
+
+      console.log(response)
+      const d = response.data
+      setReportForm((prev) => {
+        const updatedReportForm = {
+          ...prev,
+          reportId: d.reportId,
+          description: d.description,
+          grade: d.grade,
+          title: d.title,
+          rebuttal: d.rebuttal,
+          isFinalized: d.isFinalized,
+          retortContent: d.retortContent ?? "",
+        }
+        snapshots.SetSnapshot("reportForm", updatedReportForm)
+        return updatedReportForm
+      })
+      setRetortDraft("")
+      setLoading(false)
     }
     if (reportWeek !== "") {
       getReport()
-        .catch(error => (console.log(error)))
     }
   }, [reportWeek])
 
@@ -200,14 +304,18 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
         grade: "",
         description: "",
         rebuttal: "",
-        title: ""
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
       const defaultJrContractorReportForm = {
         reportId: "",
         grade: "",
         description: "",
         rebuttal: "",
-        title: ""
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
       switch(role.toLowerCase()) {
         case "contractor": 
@@ -220,6 +328,11 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
           snapshots.SetSnapshot('reportForm')
           response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/months?by=${contractorEmail}&for=${user.user.email}&year=${reportYear}`, method: "get"})
 
+          break
+        case "school":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await getSchoolReportMonths(axios, LOCAL_REPORT_URL, contractorEmail, userID, reportYear)
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -247,14 +360,18 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
         grade: "",
         description: "",
         rebuttal: "",
-        title: ""
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
       const defaultJrContractorReportForm = {
         reportId: "",
         grade: "",
         description: "",
         rebuttal: "",
-        title: ""
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
       switch(role.toLowerCase()) {
         case "contractor": 
@@ -265,7 +382,23 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
         case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/weeks?by=${contractorEmail}&for=${user.user.email}&year=${reportYear}&month=${reportMonth}`, method: "get"})
+          response = await axios({
+            baseURL: LOCAL_REPORT_URL,
+            url: `trainee/get-contractors?by=${encodeURIComponent(contractorEmail)}&for=${encodeURIComponent(user.user.email)}&year=${reportYear}&month=${encodeURIComponent(reportMonth)}`,
+            method: "get",
+          })
+          break
+        case "school":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await getSchoolReportWeeks(
+            axios,
+            LOCAL_REPORT_URL,
+            contractorEmail,
+            userID,
+            reportYear,
+            reportMonth
+          )
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -378,12 +511,62 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
             </Row>
           </div>
 
+          {
+            role === "contractor" && reportWeek && reportForm.reportId ? (
+              <div style={{ border: "solid", padding: "8px", marginBottom: "6px" }}>
+                <Row>
+                  <Col>
+                    {reportForm.isFinalized ? (
+                      <FormLabel>Status: finalized</FormLabel>
+                    ) : (
+                      <>
+                        <FormLabel>Draft — finalize to allow school visibility and junior retort.</FormLabel>
+                        <Button
+                          size="sm"
+                          className="ms-2"
+                          onClick={handleFinalizeRating}
+                          disabled={inRevise}
+                        >
+                          Finalize rating
+                        </Button>
+                      </>
+                    )}
+                  </Col>
+                </Row>
+              </div>
+            ) : null
+          }
+
           <div style={{height: "30%", border: "solid"}}>
             {
-              role == "trainee" ?
+              role === "trainee" ?
                 <>
-                  <Row style={{height: "20%", border: "solid"}}><Col>Revisions</Col></Row>
-                  <Row style={{height: "80%", border: "solid green"}}>
+                  <Row style={{height: "15%", border: "solid"}}><Col>Retort</Col></Row>
+                  <Row style={{height: "35%", border: "solid"}}>
+                    <Col>
+                      {
+                        reportForm.retortContent ? (
+                          <Form.Label style={{width: "100%"}}>{reportForm.retortContent}</Form.Label>
+                        ) : reportForm.isFinalized === true ? (
+                          <>
+                            <textarea
+                              value={retortDraft}
+                              onChange={(e) => setRetortDraft(e.target.value)}
+                              placeholder="Your retort (one per rating)"
+                              style={{ width: "100%", minHeight: "72px", resize: "none"}}
+                            />
+                            <Button size="sm" className="mt-1" onClick={handleSubmitTraineeRetort} disabled={!retortDraft.trim()}>
+                              Submit retort
+                            </Button>
+                          </>
+                        ) : (
+                          <Form.Label>Not available until the contractor finalizes this rating.</Form.Label>
+                        )
+                      }
+                    </Col>
+                  </Row>
+                  <Row style={{height: "15%", border: "solid"}}><Col>Revisions (legacy)</Col></Row>
+                  <Row style={{height: "35%", border: "solid green"}}>
                     <Col>
                       {
                         inRevise ?
@@ -400,12 +583,24 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
                     </Col>
                   </Row>
                 </>
+                : role === "school" ?
+                <>
+                  <Row style={{height: "15%", border: "solid"}}><Col>Retort</Col></Row>
+                  <Row style={{height: "35%", border: "solid"}}>
+                    <Col>
+                      <Form.Label style={{width: "100%"}}>
+                        {reportForm.retortContent || "—"}
+                      </Form.Label>
+                    </Col>
+                  </Row>
+                  <Row><Col><small>School view is read-only (finalized ratings only).</small></Col></Row>
+                </>
                 :
                 null
             }
           </div>
 
-          <Row style={{height: "10%", border: "solid"}}>
+          { role !== "school" ? (<Row style={{height: "10%", border: "solid"}}>
             <Col md={{span: 4, offset: 1}} style={{position: "relative"}}>
               {
                 inRevise ?
@@ -419,7 +614,7 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
                 inRevise ? <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} variant="success" onClick={submitRevision} disabled={_.isEqual(reportForm, snapshots.GetSnapshot('reportForm'))}>submit</Button> : null
               }
             </Col>
-          </Row>
+          </Row>) : null }
           
         </Container>
       </Row>

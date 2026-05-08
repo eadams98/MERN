@@ -6,6 +6,7 @@ import { Col, Container, Form, FormGroup, Row, Button, Spinner, FormLabel, Modal
 import Swal from "sweetalert2";
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 import { LOCAL_REPORT_URL } from "../../../../../Utilities/URLs";
+import { finalizeReport } from "../../../../../Services/reportApi";
 
 const NewReportForm = ({ userID, resetUserID }) => {
 
@@ -23,6 +24,8 @@ const NewReportForm = ({ userID, resetUserID }) => {
   })
   const [weekly, setWeekly] = useState("")
   const [validForm, setValidForm] = useState(false);
+  /** If true, after a successful create we call finalize so school / junior can see this rating. */
+  const [finalizeAfterSubmit, setFinalizeAfterSubmit] = useState(true);
 
   // methods
   let updateReportForm = (e) => {
@@ -101,23 +104,38 @@ const NewReportForm = ({ userID, resetUserID }) => {
     
 
     try {
-      //const response = await axios.post('/contractor/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
       const response = await axios({ baseURL: LOCAL_REPORT_URL, url: "/contractor/create-report/", method: "post", data: sendForm})
       data = response.data
       status = 'success'
       console.log(response)
+
+      if (finalizeAfterSubmit && reportForm.weekStartDate && reportForm.weekEndDate) {
+        try {
+          await finalizeReport(axios, LOCAL_REPORT_URL, {
+            byEmail: user.user.email,
+            forEmail: userID,
+            weekStart: reportForm.weekStartDate,
+            weekEnd: reportForm.weekEndDate,
+          })
+          data = typeof data === "string" ? `${data} Rating finalized for school / junior access.` : "Report created and finalized."
+        } catch (finErr) {
+          console.log(finErr)
+          const finMsg = finErr.response?.data?.errorMessage ?? finErr.message
+          data = typeof data === "string"
+            ? `${data} (Finalize failed: ${finMsg})`
+            : `Report saved but finalize failed: ${finMsg}`
+        }
+      }
     } catch (error) {
       console.log(error)
-      data = error.response.data.errorMessage
+      data = error.response?.data?.errorMessage ?? error.message
       status = 'fail'
     }
-    //const response = axios.post('http://localhost:4001/create-report', sendForm); //await ReportService.createReport(sendForm, refresh);
-
 
     Swal.fire({
       position: 'top',
       icon: status == 'success' ? 'success' : 'error',
-      timer: 2000,
+      timer: status == 'success' ? 3200 : 2500,
       text: data,
     })
   }
@@ -173,6 +191,16 @@ const NewReportForm = ({ userID, resetUserID }) => {
           <option value="F">F</option>
           <option value="F-">F-</option>
         </Form.Select>
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="finalizeAfterSubmit">
+        <Form.Check
+          type="checkbox"
+          id="finalize-after-submit"
+          label="Finalize after save (required for school visibility and junior retort)"
+          checked={finalizeAfterSubmit}
+          onChange={(e) => setFinalizeAfterSubmit(e.target.checked)}
+        />
       </Form.Group>
 
       <Form.Group className="mb-3" controlId="reportDescription">

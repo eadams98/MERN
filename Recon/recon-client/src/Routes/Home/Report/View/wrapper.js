@@ -3,6 +3,7 @@ import { useSelector } from "react-redux"
 import { userSelector } from "../../../../State/Slices/userSlice"
 import ViewContractorReport from "./ViewContractorReport"
 import ViewJrContractorReport from "./ViewJrContractorReport"
+import ViewSchoolReport from "./ViewSchoolReport"
 
 const ViewWrapper = () => {
   let user = useSelector(userSelector)
@@ -18,7 +19,7 @@ const ViewWrapper = () => {
         return <ViewJrContractorReport />
         break
       case "school":
-        return <div> school </div>
+        return <ViewSchoolReport />
         break
       default:
         return <div> NO ROLE ERROR </div>
