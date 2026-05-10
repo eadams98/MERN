@@ -7,7 +7,7 @@ Create React App (react-scripts 3) front end for Recon.
 - **Supported:** Node.js 18 LTS or newer (see `package.json` `engines`).
 - **Recommended:** match `.nvmrc` (Node 20 LTS) via [nvm](https://github.com/nvm-sh/nvm): `nvm use`.
 
-The `build` script sets `NODE_OPTIONS=--openssl-legacy-provider` for webpack 4 on modern Node (OpenSSL 3). If you run `react-scripts build` directly, set the same env var or expect the digest / crypto error on Node 17+.
+The **`build`** and **`start`** scripts set `NODE_OPTIONS=--openssl-legacy-provider` for webpack 4 on modern Node (OpenSSL 3). Without it, Node 17+ often throws `ERR_OSSL_EVP_UNSUPPORTED` for **both** `npm start` and `npm run build`. If you invoke `react-scripts` directly, set that env var yourself.
 
 **Styles:** global order is Bootstrap → `src/styles/tokens.css` → `src/styles/scaffold.css` → `index.css` → `CSS/general.css` (see `src/index.jsx`).
 
@@ -17,7 +17,7 @@ The `build` script sets `NODE_OPTIONS=--openssl-legacy-provider` for webpack 4 o
 
 | Command | Purpose |
 | --- | --- |
-| `npm start` | Dev server |
+| `npm start` | Dev server (sets OpenSSL legacy flag for webpack 4 on Node 17+, same as build) |
 | `npm run build` | Production bundle |
 | `npm test` | Jest in watch mode (interactive) |
 | `npm run test:ci` | Jest once, non-interactive (CI / agents) |
