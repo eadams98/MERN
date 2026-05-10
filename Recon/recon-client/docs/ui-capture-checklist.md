@@ -19,6 +19,8 @@ The recon-client UI roadmap (Recon repo: `docs/architecture/recon-client-ui-road
 
 Add rows here per PR (Login, a11y, report toolbar, etc.).
 
-## Automation (optional)
+## Automation (Playwright)
 
-If the team adds Playwright or Cypress later, store baseline images under `e2e/__snapshots__/` or equivalent and reference them in CI. Until then, **manual captures** satisfy the roadmap.
+See **`README.md` → Playwright — visual regression**. Baselines are in `e2e/visual.spec.js-snapshots/*.png`. Run `npm run test:e2e` before merging UI work; update with `npm run test:e2e:update` when the UI change is intentional.
+
+Manual captures still work for routes or states not yet covered by `e2e/visual.spec.js`.

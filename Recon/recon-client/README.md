@@ -22,5 +22,46 @@ The `build` script sets `NODE_OPTIONS=--openssl-legacy-provider` for webpack 4 o
 | `npm test` | Jest in watch mode (interactive) |
 | `npm run test:ci` | Jest once, non-interactive (CI / agents) |
 | `npm run lint` | ESLint on `src/**/*.js` and `src/**/*.jsx` |
+| `npm run test:e2e` | Playwright visual regression (production build + `serve`) |
+| `npm run test:e2e:ui` | Playwright UI mode (debugging) |
+| `npm run test:e2e:update` | Regenerate screenshot baselines after intentional UI changes |
 
-For automation and CI, treat **`test:ci`** and **`lint`** as the contract for “green” checks.
+For automation and CI, treat **`test:ci`** and **`lint`** as the contract for “green” checks. Add **`test:e2e`** when you want visual coverage (see below).
+
+## Playwright — visual regression
+
+Automated screenshots live in `e2e/visual.spec.js-snapshots/` (PNG). PRs show pixel diffs when the login page (and optional `/home` dashboard) changes.
+
+**Setup (once per clone):**
+
+```bash
+npx playwright install chromium
+```
+
+**Run:** `npm run test:e2e` — starts a local static server from `npm run build`, then compares to committed baselines.
+
+**Update baselines** after you deliberately change the UI:
+
+```bash
+npm run test:e2e:update
+```
+
+**Faster local iteration** (point at an already-running server — match its port):
+
+```bash
+PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
+```
+
+(Do not set `PLAYWRIGHT_SKIP_WEB_SERVER` in CI unless you start the server yourself.)
+
+**Authenticated `/home` screenshot** (optional — needs real API credentials hitting the same backend as the app):
+
+```bash
+E2E_USERNAME=you E2E_PASSWORD=secret E2E_ROLE=contractor npm run test:e2e:update
+```
+
+`E2E_ROLE` is `contractor` | `trainee` | `school` (matches the login tabs).
+
+**HTML report** after a run: `npx playwright show-report`
+
+Baseline filenames omit the host OS so Linux CI and macOS can share the same PNG; minor font differences may require bumping `maxDiffPixels` in `playwright.config.js` if CI flakes.
