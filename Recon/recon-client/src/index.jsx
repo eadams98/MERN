@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-// Global styles: Bootstrap base → CRA index → shared app rules (see README)
+// Global styles: Bootstrap → design tokens → scaffold → CRA index → legacy general (see README)
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/tokens.css';
+import './styles/scaffold.css';
 import './index.css';
 import './CSS/general.css';
 import App from './App';

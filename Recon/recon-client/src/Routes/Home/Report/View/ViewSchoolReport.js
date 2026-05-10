@@ -5,6 +5,8 @@ import { useSelector } from "react-redux";
 import { userSelector } from "../../../../State/Slices/userSlice";
 import useAxiosPersonal from "../../../../Hooks/useAxiosPersonal";
 import SelectUserWeek from "./SelectUserWeek/SelectUserWeek";
+import PageHeader from "../../../../components/page/PageHeader";
+import ContentCard from "../../../../components/page/ContentCard";
 
 const ViewSchoolReport = () => {
   const user = useSelector(userSelector)
@@ -43,50 +45,58 @@ const ViewSchoolReport = () => {
 
   return (
     <Container fluid className="fullScreen">
-      <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center"}}> 
-        <Col>
+      <Row className="justify-content-center py-4">
+        <Col xs={12} lg={10} xl={8}>
+          <PageHeader
+            title="School reports"
+            subtitle="Choose a student and supervising contractor, then pick a report week."
+          />
           {!started ? (
-            <Form style={{ maxWidth: 480, margin: "0 auto" }}>
-              <Form.Group className="mb-3">
-                <Form.Label>Student</Form.Label>
-                <Form.Select
-                  value={traineeEmail}
-                  onChange={(e) => setTraineeEmail(e.target.value)}
+            <ContentCard>
+              <Form style={{ maxWidth: 520, margin: "0 auto" }}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Student</Form.Label>
+                  <Form.Select
+                    value={traineeEmail}
+                    onChange={(e) => setTraineeEmail(e.target.value)}
+                  >
+                    <option value="">Select a student</option>
+                    {students.map((s) => (
+                      <option key={s.traineeId ?? s.email} value={s.email}>
+                        {(s.firstName || s.lastName)
+                          ? `${s.firstName ?? ""} ${s.lastName ?? ""} (${s.email})`.trim()
+                          : s.email}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Supervising contractor email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    autoComplete="email"
+                    value={contractorEmail}
+                    onChange={(e) => setContractorEmail(e.target.value.trim())}
+                    placeholder="contractor@example.com"
+                  />
+                </Form.Group>
+                <Button
+                  disabled={!traineeEmail || !contractorEmail}
+                  onClick={() => setStarted(true)}
                 >
-                  <option value="">Select a student</option>
-                  {students.map((s) => (
-                    <option key={s.traineeId ?? s.email} value={s.email}>
-                      {(s.firstName || s.lastName)
-                        ? `${s.firstName ?? ""} ${s.lastName ?? ""} (${s.email})`.trim()
-                        : s.email}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Supervising contractor email</Form.Label>
-                <Form.Control
-                  type="email"
-                  autoComplete="email"
-                  value={contractorEmail}
-                  onChange={(e) => setContractorEmail(e.target.value.trim())}
-                  placeholder="contractor@example.com"
-                />
-              </Form.Group>
-              <Button
-                disabled={!traineeEmail || !contractorEmail}
-                onClick={() => setStarted(true)}
-              >
-                View reports
-              </Button>
-            </Form>
+                  View reports
+                </Button>
+              </Form>
+            </ContentCard>
           ) : (
-            <SelectUserWeek
-              userID={traineeEmail}
-              contractorEmail={contractorEmail}
-              role="school"
-              resetParent={() => setStarted(false)}
-            />
+            <ContentCard>
+              <SelectUserWeek
+                userID={traineeEmail}
+                contractorEmail={contractorEmail}
+                role="school"
+                resetParent={() => setStarted(false)}
+              />
+            </ContentCard>
           )}
         </Col>
       </Row>

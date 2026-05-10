@@ -1,4 +1,4 @@
 .fullScreen {
-  background-color: white;
+  background-color: var(--recon-color-surface, #ffffff);
   height: 100%;
 }

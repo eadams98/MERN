@@ -1,64 +1,23 @@
 import React from 'react';
-import { useEffect, useState } from "react";
 import {
-  Link,
   Outlet,
-  Route,
-  Router,
-    Routes,
-    useLocation,
-    useNavigate
-  } from "react-router-dom";
-//import LoginService from "../Services/LoginService";
-//import UserLogin from "../Utility/Modals/UserLogin";
-import swal from "sweetalert2";
+  useLocation,
+} from "react-router-dom";
+import AppShell from "../../Layouts/AppShell";
+import HomeDashboard from "./Dashboard/HomeDashboard";
 
-import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav, Modal, ModalBody, Spinner } from "react-bootstrap";
-import PrimaryNav from "./Navbar/PrimaryNav";
-import { useSelector } from "react-redux";
-import { userSelector } from "../../State/Slices/userSlice";
-
-function Home(props) {
-
-    const [userForm, setUserForm] = useState({ name: "eric", password: ""});
-    const [userErrorForm, setUserErrorForm] = useState({ name: "", password: ""});
-    const navigate = useNavigate();
+function Home() {
     const location = useLocation();
-    const user = useSelector(userSelector);
-
-    useEffect(() => {
-      console.log("refresh Page")
-      console.log(user)
-    }, [user])
 
     return (
-        
-        <Container fluid className='border vh-100'>
-            <PrimaryNav navHeight="10"/>
-
-            <Row style={{height: "90%", backgroundColor: "white"}}>
-              {/*<Col>HOME APP</Col>
-              <Col> <Button onClick={() => navigate("ok")}> </Button> </Col>*/}
-              <Col style={{ height: "100%"}}>
-                {
-                  location.pathname === "/home" ?
-                    <div className="fullScreen" style={{width: "100%", height: "100%", border: "solid red", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <label>RECON</label>
-                    </div>
-                    :
-                    <Outlet/>
-                }
-                
-              </Col>
-            </Row> 
-
-            {/* Hit or miss. Either have this here or have it in each page individually (BAD IDEA, REPETITVE) */}
-            {/* ISSUE: if i switch the pages too quickly, the loader will get stuck */}
-            {/*<Modal fullscreen show={user.isLoading} style={{opacity: ".3"}}>
-              <ModalBody style={{display: "flex", alignItems: "center", justifyContent: "center", opacity: "90%"}}><Spinner/></ModalBody>
-            </Modal>*/}
-        </Container>
-    )
-} 
+        <AppShell navHeight="10">
+          {location.pathname === "/home" || location.pathname === "/home/" ? (
+            <HomeDashboard />
+          ) : (
+            <Outlet/>
+          )}
+        </AppShell>
+    );
+}
 
 export default Home;
