@@ -26,14 +26,31 @@ These are read **only when `NODE_ENV === "development"`**.
 
 All outbound HTTP uses **`src/Utilities/URLs.js`** (wired into `useAxiosPersonal` via **`BASE_URL`** and into report flows via **`REPORTS_BASE_URL`**).
 
-| Env var | Used for | Default (production) |
+| Env var | Used for | Fallback if unset |
 | --- | --- | --- |
-| `REACT_APP_API_BASE_URL` | Main API: auth, profile, connections, buckets, lists | `https://www.datareconreports.com` |
-| `REACT_APP_REPORTS_BASE_URL` | Reports service paths (`contractor/report/…`, finalize, school report helpers) | `https://www.datareconreports.com/reports` |
+| `REACT_APP_API_BASE_URL` | Main API: auth, profile, connections, buckets, lists | Constants in **`src/Utilities/URLs.js`** |
+| `REACT_APP_REPORTS_BASE_URL` | Reports paths (`contractor/report/…`, finalize, school report helpers) | Same file |
 
-**Local:** Copy `.env.development.example` → `.env.development.local` and set both URLs (often API on `:4000`, reports on `:4001`). `LOCAL_REPORT_URL` is kept as an alias of `REPORTS_BASE_URL` for any older imports.
+Relative paths passed to axios (e.g. `/school/…`) **must start with `/`** so they resolve against these bases.
 
-Relative paths passed to axios (e.g. `/school/…`) **must start with `/`** so they resolve against these bases, not the dev server origin.
+### CRA resolves endpoints at **build time** (not a runtime menu)
+
+Create React App inlines **`REACT_APP_*`** when webpack runs (`npm start` / `npm run build`). To “switch” to another host pair you **supply different env vars for that build** (or restart dev after changing `.env.*`). Updating env on an S3/CloudFront bucket **without** rebuilding will **not** change API targets.
+
+### Switching endpoint sets (local, AWS, staging, …)
+
+| Scenario | What to do |
+| --- | --- |
+| **Local dev** | **`.env.development.example`** → **`.env.development.local`** (gitignored): e.g. `localhost:4000` + `:4001`. |
+| **Prod-like build locally** | **`.env.production.example`** → **`.env.production.local`**, **or** one-off: `REACT_APP_API_BASE_URL=… REACT_APP_REPORTS_BASE_URL=… npm run build` |
+| **AWS / hosted CI** | Set **`REACT_APP_API_BASE_URL`** and **`REACT_APP_REPORTS_BASE_URL`** in the deploy provider or build pipeline. Use **different** values per branch/environment (staging vs prod). |
+| **`LOCAL_REPORT_URL` in old code** | Alias of **`REPORTS_BASE_URL`** — same switching rules. |
+
+CRA file precedence: **`.env.{mode}.local`** wins over **`.env.local`**, then **`.env.development`** / **`.env.production`**, then **`.env`**. Details: [CRA custom env vars](https://create-react-app.dev/docs/adding-custom-environment-variables/).
+
+**Optional later:** Runtime switching (no rebuild) needs e.g. a **`public/config.json`** fetched on load—out of scope unless you ask for it.
+
+Templates (safe to commit): **`.env.development.example`**, **`.env.production.example`**.
 
 ## Scripts
 

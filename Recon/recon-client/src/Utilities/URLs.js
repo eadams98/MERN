@@ -1,5 +1,10 @@
 /**
- * Single source of truth for API origins (overridable at build time via CRA env).
+ * Single source of truth for API origins.
+ *
+ * Values come from CRA **build-time** env (`REACT_APP_*`). Different deployments
+ * (local, AWS, staging) = different builds with different env vars—not a runtime toggle.
+ *
+ * See README: "Switching endpoints (local vs AWS vs staging)".
  *
  * - **BASE_URL** — Main API: auth (`/user/...`), profile, connections, buckets,
  *   contractor/trainee/school lists, etc. Used by `useAxiosPersonal` and `src/API/axios.js`.
