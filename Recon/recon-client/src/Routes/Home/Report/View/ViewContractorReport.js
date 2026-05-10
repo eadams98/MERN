@@ -41,7 +41,7 @@ const ViewContractorReport = () => {
         <Col> {/* <Col className='h-75'> */}
         
           { 
-            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent} axiosURL={`contractor/${user.user.id}/trainees`}/> : null
+            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent} axiosURL={`/contractor/${user.user.id}/trainees`}/> : null
           }
 
           { 

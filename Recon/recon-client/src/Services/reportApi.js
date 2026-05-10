@@ -1,11 +1,11 @@
 /**
  * Report microservice calls (rating finalization + trainee retort).
- * Pass an axios instance from useAxiosPersonal() and LOCAL_REPORT_URL as baseURL.
+ * Pass an axios instance from useAxiosPersonal() and REPORTS_BASE_URL as baseURL.
  */
 
 /**
  * @param {import('axios').AxiosInstance} axios
- * @param {string} baseURL - e.g. LOCAL_REPORT_URL
+ * @param {string} baseURL - e.g. REPORTS_BASE_URL from Utilities/URLs.js
  * @param {{ byEmail: string, forEmail: string, weekStart: string, weekEnd: string }} params - dates ISO yyyy-MM-dd
  */
 export function finalizeReport(axios, baseURL, { byEmail, forEmail, weekStart, weekEnd }) {

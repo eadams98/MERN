@@ -10,7 +10,7 @@ import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 import _ from 'lodash'
 import useSnapshots from "../../../../../Hooks/useSnapshots";
 import Swal from "sweetalert2";
-import { LOCAL_REPORT_URL } from "../../../../../Utilities/URLs";
+import { REPORTS_BASE_URL } from "../../../../../Utilities/URLs";
 import {
   finalizeReport,
   createTraineeRetort,
@@ -78,7 +78,7 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
     if (!wr || role?.toLowerCase() !== "contractor") return
     setLoading(true)
     try {
-      const res = await finalizeReport(axios, LOCAL_REPORT_URL, {
+      const res = await finalizeReport(axios, REPORTS_BASE_URL, {
         byEmail: user.user.email,
         forEmail: userID,
         weekStart: wr.weekStart,
@@ -102,7 +102,7 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
     if (!wr || role?.toLowerCase() !== "trainee" || !retortDraft.trim()) return
     setLoading(true)
     try {
-      const res = await createTraineeRetort(axios, LOCAL_REPORT_URL, {
+      const res = await createTraineeRetort(axios, REPORTS_BASE_URL, {
         content: retortDraft.trim(),
         sentByEmail: contractorEmail,
         sentForEmail: user.user.email,
@@ -127,7 +127,7 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
     try {
       console.log(reportForm)
       const isRevisionByTrainee = role === "trainee" ? true : false
-      const response = await axios({ baseURL: LOCAL_REPORT_URL, url:`contractor/update-report?revision=${isRevisionByTrainee}`, method: "put", data: reportForm})
+      const response = await axios({ baseURL: REPORTS_BASE_URL, url:`contractor/update-report?revision=${isRevisionByTrainee}`, method: "put", data: reportForm})
       const updatedSnapshot = {
         ...snapshots.GetSnapshot('reportForm'),
         "grade": reportForm.grade,
@@ -189,17 +189,17 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
           //response = await reportService.contractorGetReportYearsOfMyUser(user.user.email, userID)
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
           break
         case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/years?by=${contractorEmail}&for=${user.user.email}`, method: "get"})
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/years?by=${contractorEmail}&for=${user.user.email}`, method: "get"})
           break
         case "school":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await getSchoolReportYears(axios, LOCAL_REPORT_URL, contractorEmail, userID)
+          response = await getSchoolReportYears(axios, REPORTS_BASE_URL, contractorEmail, userID)
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -234,14 +234,14 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
         switch (role.toLowerCase()) {
           case "contractor":
             response = await axios({
-              baseURL: LOCAL_REPORT_URL,
+              baseURL: REPORTS_BASE_URL,
               url: `contractor/get-report?by=${encodeURIComponent(user.user.email)}&for=${encodeURIComponent(userID)}&weekStart=${wr.weekStart}&weekEnd=${wr.weekEnd}`,
               method: "get",
             })
             break
           case "trainee":
             response = await axios({
-              baseURL: LOCAL_REPORT_URL,
+              baseURL: REPORTS_BASE_URL,
               url: `trainee/get-report?by=${encodeURIComponent(contractorEmail)}&for=${encodeURIComponent(user.user.email)}&weekStart=${wr.weekStart}&weekEnd=${wr.weekEnd}`,
               method: "get",
             })
@@ -249,7 +249,7 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
           case "school":
             response = await getSchoolReport(
               axios,
-              LOCAL_REPORT_URL,
+              REPORTS_BASE_URL,
               contractorEmail,
               userID,
               wr.weekStart,
@@ -324,18 +324,18 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
         case "contractor": 
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/months?by=${user.user.email}&for=${userID}&year=${reportYear}`, method: "get"})
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/months?by=${user.user.email}&for=${userID}&year=${reportYear}`, method: "get"})
           break
         case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/months?by=${contractorEmail}&for=${user.user.email}&year=${reportYear}`, method: "get"})
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/months?by=${contractorEmail}&for=${user.user.email}&year=${reportYear}`, method: "get"})
 
           break
         case "school":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await getSchoolReportMonths(axios, LOCAL_REPORT_URL, contractorEmail, userID, reportYear)
+          response = await getSchoolReportMonths(axios, REPORTS_BASE_URL, contractorEmail, userID, reportYear)
           break
         default:
           setReportForm(defaultContractorReportForm)
@@ -380,13 +380,13 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
         case "contractor": 
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios({ baseURL: LOCAL_REPORT_URL, url: `contractor/report/weeks?by=${user.user.email}&for=${userID}&year=${reportYear}&month=${reportMonth}`, method: "get"})
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/weeks?by=${user.user.email}&for=${userID}&year=${reportYear}&month=${reportMonth}`, method: "get"})
           break
         case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
           response = await axios({
-            baseURL: LOCAL_REPORT_URL,
+            baseURL: REPORTS_BASE_URL,
             url: `trainee/get-contractors?by=${encodeURIComponent(contractorEmail)}&for=${encodeURIComponent(user.user.email)}&year=${reportYear}&month=${encodeURIComponent(reportMonth)}`,
             method: "get",
           })
@@ -396,7 +396,7 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
           snapshots.SetSnapshot('reportForm')
           response = await getSchoolReportWeeks(
             axios,
-            LOCAL_REPORT_URL,
+            REPORTS_BASE_URL,
             contractorEmail,
             userID,
             reportYear,

@@ -22,6 +22,19 @@ REACT_APP_LOGIN_DEV_PASS=your.dev.password
 
 These are read **only when `NODE_ENV === "development"`**.
 
+## API base URLs (axios)
+
+All outbound HTTP uses **`src/Utilities/URLs.js`** (wired into `useAxiosPersonal` via **`BASE_URL`** and into report flows via **`REPORTS_BASE_URL`**).
+
+| Env var | Used for | Default (production) |
+| --- | --- | --- |
+| `REACT_APP_API_BASE_URL` | Main API: auth, profile, connections, buckets, lists | `https://www.datareconreports.com` |
+| `REACT_APP_REPORTS_BASE_URL` | Reports service paths (`contractor/report/…`, finalize, school report helpers) | `https://www.datareconreports.com/reports` |
+
+**Local:** Copy `.env.development.example` → `.env.development.local` and set both URLs (often API on `:4000`, reports on `:4001`). `LOCAL_REPORT_URL` is kept as an alias of `REPORTS_BASE_URL` for any older imports.
+
+Relative paths passed to axios (e.g. `/school/…`) **must start with `/`** so they resolve against these bases, not the dev server origin.
+
 ## Scripts
 
 | Command | Purpose |

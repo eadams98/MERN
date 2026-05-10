@@ -25,7 +25,7 @@ const ViewJrContractorReport = () => {
     console.log(user.user.roles[0].authority)
     const getContractor = async () => {
       try {
-        const resp = await axios(`trainee/${user.user.id}/contractor`)
+        const resp = await axios(`/trainee/${user.user.id}/contractor`)
         console.log(resp)
         setContractorEmail(resp.data.email)
       } catch (err) {

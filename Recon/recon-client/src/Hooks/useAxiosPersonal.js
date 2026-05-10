@@ -1,7 +1,8 @@
 import axiosRetry from "axios-retry";
+import axios from "axios";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "../API/axios";
+import { BASE_URL } from "../Utilities/URLs";
 import { setLoadingComplete, setLoadingInProgress, userSelector } from "../State/Slices/userSlice";
 import useRefreshToken from "./useRefreshToken";
 
@@ -17,7 +18,7 @@ const useAxiosPersonal = () => {
   const [tokenUpdated, setTokenUpdated] = useState(false);
   const axiosInstanceRef = useRef(null);
   const dispatch = useDispatch()
-  axiosInstanceRef.current = axios.create();
+  axiosInstanceRef.current = axios.create({ baseURL: BASE_URL });
 
 
   useEffect(() => {

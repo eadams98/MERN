@@ -5,7 +5,7 @@ import { userSelector } from "../../../../../State/Slices/userSlice";
 import { Col, Container, Form, FormGroup, Row, Button, Spinner, FormLabel, Modal, ModalBody } from "react-bootstrap"
 import Swal from "sweetalert2";
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
-import { LOCAL_REPORT_URL } from "../../../../../Utilities/URLs";
+import { REPORTS_BASE_URL } from "../../../../../Utilities/URLs";
 import { finalizeReport } from "../../../../../Services/reportApi";
 
 const NewReportForm = ({ userID, resetUserID }) => {
@@ -104,14 +104,14 @@ const NewReportForm = ({ userID, resetUserID }) => {
     
 
     try {
-      const response = await axios({ baseURL: LOCAL_REPORT_URL, url: "/contractor/create-report/", method: "post", data: sendForm})
+      const response = await axios({ baseURL: REPORTS_BASE_URL, url: "/contractor/create-report/", method: "post", data: sendForm})
       data = response.data
       status = 'success'
       console.log(response)
 
       if (finalizeAfterSubmit && reportForm.weekStartDate && reportForm.weekEndDate) {
         try {
-          await finalizeReport(axios, LOCAL_REPORT_URL, {
+          await finalizeReport(axios, REPORTS_BASE_URL, {
             byEmail: user.user.email,
             forEmail: userID,
             weekStart: reportForm.weekStartDate,

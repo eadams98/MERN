@@ -58,7 +58,7 @@ const ProfileForm = () => {
       setLoading(true)
       try {
         //console.log(`role = ${user.user.roles[0].authority}`)
-        const resp = await axios(`${role}/${id}`)
+        const resp = await axios(`/${role}/${id}`)
         const { firstName, lastName, trainees, email, schoolName } = resp.data
         let profileFormLocal
         switch (role) {

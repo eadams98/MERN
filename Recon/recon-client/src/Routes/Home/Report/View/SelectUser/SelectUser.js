@@ -12,7 +12,8 @@ const SelectUser = ({setUserIDInParent, axiosURL}) => {
   useEffect(()=> {
     const getMyUsers = async () => {
       setLoading(true)
-      const response = await axios({url: axiosURL, method: "GET"})
+      const path = axiosURL.startsWith("/") ? axiosURL : `/${axiosURL}`
+      const response = await axios({ url: path, method: "GET" })
       console.log(response)
       setMyUsers(response.data)
       setLoading(false)
