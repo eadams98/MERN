@@ -13,7 +13,6 @@ import {
 //import UserLogin from "../Utility/Modals/UserLogin";
 import swal from "sweetalert2";
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Nav, Modal, ModalBody, Spinner } from "react-bootstrap";
 import PrimaryNav from "./Navbar/PrimaryNav";
 import { useSelector } from "react-redux";

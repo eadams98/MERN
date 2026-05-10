@@ -5,6 +5,7 @@ import { Container, Row, Col, Form, Alert, Card, Button, Navbar, NavDropdown, Na
 import { Link, useLocation } from "react-router-dom";
 import defaultProfilePicture from '../../../Default-Profile-Picture.jpeg';
 import { useEffect } from "react";
+import styles from "../../../CSS/Modules/Button.module.css";
 
 const PrimaryNav = ({navHeight = "10", ...restProps}) => {
   
@@ -52,7 +53,7 @@ const PrimaryNav = ({navHeight = "10", ...restProps}) => {
                 <Nav.Link as={Link} to={"sample"} disabled={location.pathname === "/home/sample" || user.isLoading}>Sample</Nav.Link>
             </Nav>
             <Navbar.Collapse className="justify-content-end">
-              <Nav.Link as={Button} onClick={handleLogout}>Logout</Nav.Link>
+              <Nav.Link as={Button} className={styles.reconButton} onClick={handleLogout}>Logout</Nav.Link>
               <Navbar.Text>
                 Signed in as: <a href="#login">{user.user.username}</a>
               </Navbar.Text>

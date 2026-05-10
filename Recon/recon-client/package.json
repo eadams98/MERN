@@ -6,11 +6,11 @@
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/free-solid-svg-icons": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@reduxjs/toolkit": "^2.2.7",
+    "@reduxjs/toolkit": "1.9.7",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.2.1",
+    "axios": "0.27.2",
     "axios-retry": "^3.3.1",
     "bootstrap": "^5.2.3",
     "lodash": "^4.17.21",
@@ -27,17 +27,30 @@
   "scripts": {
     "start": "react-scripts start",
     "tsc": "tsc --watch",
-    "build": "react-scripts build",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
+    "test:ci": "CI=true react-scripts test --watchAll=false",
+    "lint": "eslint \"src/**/*.{js,jsx}\"",
     "eject": "react-scripts eject"
   },
   "engines": {
-    "node": "12.22.0"
+    "node": ">=18.0.0"
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "**/*.test.js",
+          "**/*.test.jsx",
+          "**/setupTests.js"
+        ],
+        "env": {
+          "jest": true
+        }
+      }
     ]
   },
   "browserslist": {

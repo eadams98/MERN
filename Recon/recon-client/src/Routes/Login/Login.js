@@ -7,7 +7,6 @@ import {
 //import UserLogin from "../Utility/Modals/UserLogin";
 import swal from "sweetalert2";
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import styleTest from '../../CSS/Modules/Button.module.css';
 import { Container, Row, Col, Form, Alert, Card, Button, Modal, ModalBody, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";

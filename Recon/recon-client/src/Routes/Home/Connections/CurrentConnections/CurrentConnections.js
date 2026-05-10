@@ -68,8 +68,8 @@ const CurrentConnections = () => {
       }
     }
 
-    getMyStudents()
-    getAvailableContractor()
+    //getMyStudents()
+    //getAvailableContractor()
   }, [])
 
   useEffect(() => {
