@@ -13,6 +13,15 @@ The **`build`** and **`start`** scripts set `NODE_OPTIONS=--openssl-legacy-provi
 
 **Dependencies:** `@reduxjs/toolkit` and `axios` are pinned to versions that work with **Create React App 3** and its Jest setup (CommonJS-friendly). Upgrading `react-scripts` (or adding CRACO / eject + ESM transforms) would allow moving back to current `@reduxjs/toolkit` 2.x and `axios` 1.x line without test workarounds.
 
+**Login (production vs development):** Production builds ship with **empty** username/password fields. For local convenience only, add to `.env.development.local` (never commit secrets):
+
+```bash
+REACT_APP_LOGIN_DEV_USER=your.dev.login
+REACT_APP_LOGIN_DEV_PASS=your.dev.password
+```
+
+These are read **only when `NODE_ENV === "development"`**.
+
 ## Scripts
 
 | Command | Purpose |

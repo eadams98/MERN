@@ -9,8 +9,6 @@ import {
 import Login from './Routes/Login/Login'
 import Home from './Routes/Home/Home';
 import PrivateRoutes from './Utilities/PrivateRoute';
-import { useSelector } from 'react-redux';
-import { userSelector } from './State/Slices/userSlice';
 import PageNotFound from './PageNotFound';
 import GenerateReport from './Routes/Home/Report/Create/GenerateNewReport';
 import ViewWrapper from './Routes/Home/Report/View/wrapper';
@@ -22,14 +20,12 @@ import PageWrapper from './Utilities/PageWrapper';
 
 function App() {
 
-  const user = useSelector(userSelector)
-
   return (
     <div className="App">
       <Router>
         <Routes>
           <Route element={<PageNotFound/>} path='*'/>
-          <Route element={<Login user={user}/>} path="/" />
+          <Route element={<Login />} path="/" />
           <Route element={<PageWrapper height="100vh"/>} path="/test" />
           <Route element={<PrivateRoutes/>}>
             <Route element={<Home/>} path="/home/" >
