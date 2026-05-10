@@ -41,8 +41,8 @@ Create React App inlines **`REACT_APP_*`** when webpack runs (`npm start` / `npm
 
 | Scenario | What to do |
 | --- | --- |
-| **Local dev** | **`.env.development.example`** → **`.env.development.local`** (gitignored): e.g. `localhost:4000` + `:4001`. |
-| **Prod-like build locally** | **`.env.production.example`** → **`.env.production.local`**, **or** one-off: `REACT_APP_API_BASE_URL=… REACT_APP_REPORTS_BASE_URL=… npm run build` |
+| **Local dev** | Repo includes **`.env.development`** (localhost API + reports). Your overrides go in **`.env.development.local`** (already created for you / gitignored). |
+| **Prod-like build locally** | Edit **`.env.production.local`** (gitignored) **or** use **`.env.production.example`** as a reference, **or** one-off: `REACT_APP_API_BASE_URL=… REACT_APP_REPORTS_BASE_URL=… npm run build` |
 | **AWS / hosted CI** | Set **`REACT_APP_API_BASE_URL`** and **`REACT_APP_REPORTS_BASE_URL`** in the deploy provider or build pipeline. Use **different** values per branch/environment (staging vs prod). |
 | **`LOCAL_REPORT_URL` in old code** | Alias of **`REPORTS_BASE_URL`** — same switching rules. |
 
