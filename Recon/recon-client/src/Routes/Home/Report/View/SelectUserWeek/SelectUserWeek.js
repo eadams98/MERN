@@ -2,7 +2,10 @@ import React from 'react';
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { userSelector } from "../../../../../State/Slices/userSlice";
-import { Col, Container, Form, FormGroup, Row, Button, FormLabel, Spinner } from "react-bootstrap"
+import { Col, Container, Form, Row, Button, FormLabel, Spinner } from "react-bootstrap"
+import ContentCard from "../../../../../components/page/ContentCard";
+import ReportWeekToolbar from "./ReportWeekToolbar";
+import styles from "./SelectUserWeek.module.css";
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 import _ from 'lodash'
 import useSnapshots from "../../../../../Hooks/useSnapshots";
@@ -419,206 +422,222 @@ const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
   if (loading) { return <Spinner/>}
   else if (!loading && isError) { return <h1>ERROR LOADING SOME DATA</h1> }
   else return (
-    <Container fluid style={{ backgroundColor: "grey", height: "75vh" }}>
+    <Container fluid className={styles.page}>
+      <ReportWeekToolbar
+        onBack={resetParent}
+        yearOptions={reportYears}
+        monthOptions={reportMonths}
+        weekOptions={reportDays}
+        yearValue={reportYear}
+        monthValue={reportMonth}
+        weekValue={reportWeek}
+        onYearChange={(e) => setReportYear(e.target.value)}
+        onMonthChange={(e) => setReportMonth(e.target.value)}
+        onWeekChange={(e) => setReportWeek(e.target.value)}
+        disabled={inRevise}
+      />
 
-      {/* Row 1 */}
-      <Row style={{ height: "10%", border: "solid" }}>
-          <Col md={1} style={{ display: "flex" }}>
-            <FormLabel onClick={resetParent} style={{ margin: "auto", textAlign: "center", cursor: "pointer" }}>{`< USERS`}</FormLabel>
-          </Col>
-          <Col md={{span: 2, offset: 1}} style={{ display: "flex" }}>
-            <Form.Select
-              value={reportYear}
-              onChange={(e) => setReportYear(e.target.value)}
-              disabled={inRevise} 
-              style={{ margin: "auto", textAlign: "center" }} 
-            >
-              <option value="" hidden>{reportYears.length > 0 ? '--select a year---' : 'No Years'}</option>
-              {
-                reportYears.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
-              }
-            </Form.Select>
-          </Col>
-          <Col md={{span: 2, offset: 1}} style={{ display: "flex" }}>
-            <Form.Select
-              value={reportMonth}
-              onChange={(e) => setReportMonth(e.target.value)}
-              disabled={inRevise} 
-              style={{ margin: "auto", textAlign: "center" }} 
-            >
-              <option value="" hidden>{reportMonths.length > 0 ? '--select a month---' : 'No Months'}</option>
-              {
-                reportMonths.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
-              }
-            </Form.Select>
-          </Col>
-          <Col md={{span: 2, offset: 1}} style={{ display: "flex" }}>
-            <Form.Select
-              value={reportWeek}
-              onChange={(e) => setReportWeek(e.target.value)}
-              disabled={inRevise} 
-              style={{ margin: "auto", textAlign: "center" }} 
-            >
-              <option value="" hidden>{reportDays.length > 0 ? '--select a day---' : 'No Days'}</option>
-              {
-                reportDays.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
-              }
-            </Form.Select>
-          </Col>
-      </Row>
-
-      {/* Row 2 */}
-      <Row style={{ height: "90%", border: "solid", display: "flex"}}>
-        <span style={{textAlign: "center"}}>{ reportYear != '' && reportMonth != '' && reportWeek != '' ? `${reportWeek}` : 'NO DATE' }</span>
-        <Container fluid style={{ backgroundColor: "white", height: "90%", margin: "auto" }}>
-          <div style={{height: "20%", border: "solid"}}>
-            <Row>
-              <Col>Grade</Col>
-            </Row>
+      <Row className={styles.mainRow}>
+        <div className={styles.weekBanner}>
+          {reportYear !== "" && reportMonth !== "" && reportWeek !== ""
+            ? `${reportWeek}`
+            : "NO DATE"}
+        </div>
+        <Container fluid className={styles.panel}>
+          <ContentCard className={styles.section}>
+            <div className={styles.sectionLabel}>Grade</div>
             <Row>
               <Col>
-                {
-                  inRevise ?
-                    <Form.Select value={reportForm.grade} name='grade' onChange={updateReportForm} style={{textAlign: "center"}}>
-                      <option value={""}></option>
-                      {GRADES.map((grade, idx) => <option value={grade}>{grade}</option>)}
-                    </Form.Select>
-                    :
-                    <FormLabel>{reportForm.grade}</FormLabel>
-                }
+                {inRevise ? (
+                  <Form.Select
+                    value={reportForm.grade}
+                    name="grade"
+                    onChange={updateReportForm}
+                    style={{ textAlign: "center" }}
+                  >
+                    <option value="" />
+                    {GRADES.map((grade) => (
+                      <option key={grade} value={grade}>
+                        {grade}
+                      </option>
+                    ))}
+                  </Form.Select>
+                ) : (
+                  <FormLabel>{reportForm.grade}</FormLabel>
+                )}
               </Col>
             </Row>
-          </div>
+          </ContentCard>
 
-          <div style={{height: "40%", border: "solid"}}>
-            <Row >
-              <Col>Description</Col>
-            </Row>
+          <ContentCard className={styles.section}>
+            <div className={styles.sectionLabel}>Description</div>
             <Row>
               <Col>
-                {
-                  inRevise && role == "contractor"?
-                    <textarea 
-                      name="description"
-                      value={reportForm.description}
-                      onChange={updateReportForm}
-                      style={{ width: "100%", height: "100%", resize: "none"}}
-                    /> 
-                    :
-                    <Form.Label style={{width: "100%"}}>{reportForm.description}</Form.Label>
-                }
+                {inRevise && role === "contractor" ? (
+                  <textarea
+                    name="description"
+                    value={reportForm.description}
+                    onChange={updateReportForm}
+                    className={styles.textarea}
+                    rows={6}
+                  />
+                ) : (
+                  <Form.Label style={{ width: "100%" }}>{reportForm.description}</Form.Label>
+                )}
               </Col>
             </Row>
-          </div>
+          </ContentCard>
 
-          {
-            role === "contractor" && reportWeek && reportForm.reportId ? (
-              <div style={{ border: "solid", padding: "8px", marginBottom: "6px" }}>
-                <Row>
-                  <Col>
-                    {reportForm.isFinalized ? (
-                      <FormLabel>Status: finalized</FormLabel>
-                    ) : (
-                      <>
-                        <FormLabel>Draft — finalize to allow school visibility and junior retort.</FormLabel>
-                        <Button
-                          size="sm"
-                          className="ms-2"
-                          onClick={handleFinalizeRating}
-                          disabled={inRevise}
-                        >
-                          Finalize rating
-                        </Button>
-                      </>
-                    )}
-                  </Col>
-                </Row>
-              </div>
-            ) : null
-          }
+          {role === "contractor" && reportWeek && reportForm.reportId ? (
+            <ContentCard className={styles.section}>
+              <Row>
+                <Col>
+                  {reportForm.isFinalized ? (
+                    <FormLabel>Status: finalized</FormLabel>
+                  ) : (
+                    <>
+                      <FormLabel>
+                        Draft — finalize to allow school visibility and junior retort.
+                      </FormLabel>
+                      <Button
+                        size="sm"
+                        className="ms-2"
+                        type="button"
+                        onClick={handleFinalizeRating}
+                        disabled={inRevise}
+                      >
+                        Finalize rating
+                      </Button>
+                    </>
+                  )}
+                </Col>
+              </Row>
+            </ContentCard>
+          ) : null}
 
-          <div style={{height: "30%", border: "solid"}}>
-            {
-              role === "trainee" ?
+          {(role === "trainee" || role === "school") && (
+            <ContentCard className={styles.section}>
+              {role === "trainee" ? (
                 <>
-                  <Row style={{height: "15%", border: "solid"}}><Col>Retort</Col></Row>
-                  <Row style={{height: "35%", border: "solid"}}>
+                  <div className={styles.sectionLabel}>Retort</div>
+                  <Row className="mb-3">
                     <Col>
-                      {
-                        reportForm.retortContent ? (
-                          <Form.Label style={{width: "100%"}}>{reportForm.retortContent}</Form.Label>
-                        ) : reportForm.isFinalized === true ? (
-                          <>
-                            <textarea
-                              value={retortDraft}
-                              onChange={(e) => setRetortDraft(e.target.value)}
-                              placeholder="Your retort (one per rating)"
-                              style={{ width: "100%", minHeight: "72px", resize: "none"}}
-                            />
-                            <Button size="sm" className="mt-1" onClick={handleSubmitTraineeRetort} disabled={!retortDraft.trim()}>
-                              Submit retort
-                            </Button>
-                          </>
-                        ) : (
-                          <Form.Label>Not available until the contractor finalizes this rating.</Form.Label>
-                        )
-                      }
+                      {reportForm.retortContent ? (
+                        <Form.Label style={{ width: "100%" }}>
+                          {reportForm.retortContent}
+                        </Form.Label>
+                      ) : reportForm.isFinalized === true ? (
+                        <>
+                          <textarea
+                            value={retortDraft}
+                            onChange={(e) => setRetortDraft(e.target.value)}
+                            placeholder="Your retort (one per rating)"
+                            className={styles.textarea}
+                            rows={3}
+                          />
+                          <Button
+                            size="sm"
+                            className="mt-1"
+                            type="button"
+                            onClick={handleSubmitTraineeRetort}
+                            disabled={!retortDraft.trim()}
+                          >
+                            Submit retort
+                          </Button>
+                        </>
+                      ) : (
+                        <Form.Label>
+                          Not available until the contractor finalizes this rating.
+                        </Form.Label>
+                      )}
                     </Col>
                   </Row>
-                  <Row style={{height: "15%", border: "solid"}}><Col>Revisions (legacy)</Col></Row>
-                  <Row style={{height: "35%", border: "solid green"}}>
+                  <div className={styles.sectionLabel}>Revisions (legacy)</div>
+                  <Row>
                     <Col>
-                      {
-                        inRevise ?
-                          <textarea
-                            name="rebuttal"
-                            value={reportForm.rebuttal}
-                            onChange={updateReportForm}
-                            type="textarea"
-                            style={{ width: "100%", height: "100%", resize: "none"}}          
-                          />
-                          :
-                          <Form.Label style={{width: "100%"}}>{reportForm.rebuttal}</Form.Label>
-                      }
+                      {inRevise ? (
+                        <textarea
+                          name="rebuttal"
+                          value={reportForm.rebuttal}
+                          onChange={updateReportForm}
+                          className={styles.textarea}
+                          rows={5}
+                        />
+                      ) : (
+                        <Form.Label style={{ width: "100%" }}>
+                          {reportForm.rebuttal}
+                        </Form.Label>
+                      )}
                     </Col>
                   </Row>
                 </>
-                : role === "school" ?
+              ) : (
                 <>
-                  <Row style={{height: "15%", border: "solid"}}><Col>Retort</Col></Row>
-                  <Row style={{height: "35%", border: "solid"}}>
+                  <div className={styles.sectionLabel}>Retort</div>
+                  <Row>
                     <Col>
-                      <Form.Label style={{width: "100%"}}>
+                      <Form.Label style={{ width: "100%" }}>
                         {reportForm.retortContent || "—"}
                       </Form.Label>
                     </Col>
                   </Row>
-                  <Row><Col><small>School view is read-only (finalized ratings only).</small></Col></Row>
+                  <Row>
+                    <Col>
+                      <small>
+                        School view is read-only (finalized ratings only).
+                      </small>
+                    </Col>
+                  </Row>
                 </>
-                :
-                null
-            }
-          </div>
+              )}
+            </ContentCard>
+          )}
 
-          { role !== "school" ? (<Row style={{height: "10%", border: "solid"}}>
-            <Col md={{span: 4, offset: 1}} style={{position: "relative"}}>
-              {
-                inRevise ?
-                  <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} onClick={()=> {setInRevise(false); checkSnapshotValidation()}} variant="danger">Cancel</Button>
-                  :
-                  <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} hidden={!_.isEqual(reportForm, snapshots.GetSnapshot('reportForm'))} onClick={()=> setInRevise(true)}>Revise</Button> 
-              }
-            </Col>
-            <Col md={{span: 4, offset: 2}} style={{position: "relative"}}>
-              {
-                inRevise ? <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} variant="success" onClick={submitRevision} disabled={_.isEqual(reportForm, snapshots.GetSnapshot('reportForm'))}>submit</Button> : null
-              }
-            </Col>
-          </Row>) : null }
-          
+          {role !== "school" ? (
+            <Row className={styles.actionsRow}>
+              <Col md={{ span: 4, offset: 1 }} className="text-center">
+                {inRevise ? (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={() => {
+                      setInRevise(false);
+                      checkSnapshotValidation();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    hidden={
+                      !_.isEqual(reportForm, snapshots.GetSnapshot("reportForm"))
+                    }
+                    onClick={() => setInRevise(true)}
+                  >
+                    Revise
+                  </Button>
+                )}
+              </Col>
+              <Col md={{ span: 4, offset: 2 }} className="text-center">
+                {inRevise ? (
+                  <Button
+                    type="button"
+                    variant="success"
+                    onClick={submitRevision}
+                    disabled={_.isEqual(
+                      reportForm,
+                      snapshots.GetSnapshot("reportForm")
+                    )}
+                  >
+                    submit
+                  </Button>
+                ) : null}
+              </Col>
+            </Row>
+          ) : null}
         </Container>
       </Row>
-
     </Container>
   )
 }
