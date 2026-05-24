@@ -1,0 +1,50 @@
+.page {
+  background-color: var(--recon-color-bg, #f4f6f8);
+  min-height: 75vh;
+  padding: var(--recon-space-4, 1rem);
+}
+
+.mainRow {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.weekBanner {
+  text-align: center;
+  padding: var(--recon-space-2, 0.5rem);
+  color: var(--recon-color-text-muted, #6c757d);
+  font-size: 0.95rem;
+}
+
+.panel {
+  background: var(--recon-color-surface, #ffffff);
+  border: 1px solid var(--recon-color-border, #dee2e6);
+  border-radius: var(--recon-radius-md, 0.375rem);
+  box-shadow: var(--recon-shadow-sm, 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075));
+  height: 90%;
+  margin: auto;
+  padding: var(--recon-space-4, 1rem);
+  max-width: 100%;
+}
+
+.section {
+  margin-bottom: var(--recon-space-4, 1rem);
+}
+
+.sectionLabel {
+  font-weight: 600;
+  margin-bottom: var(--recon-space-2, 0.5rem);
+  color: var(--recon-color-text, #212529);
+}
+
+.textarea {
+  width: 100%;
+  resize: none;
+}
+
+.actionsRow {
+  margin-top: var(--recon-space-4, 1rem);
+  padding-top: var(--recon-space-3, 0.75rem);
+  border-top: 1px solid var(--recon-color-border, #dee2e6);
+}

@@ -1,13 +1,19 @@
 import { useState } from "react";
+import React from 'react';
 import { Button, Col, Container, Modal, Row, } from "react-bootstrap"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark } from '@fortawesome/free-solid-svg-icons'
 import useAxiosPersonal from "../../../Hooks/useAxiosPersonal";
 import Swal from "sweetalert2"
+import { updatePicture, userSelector } from "../../../State/Slices/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
-const ProfileUploadModal = ({ closeModal, showProfileModal}) => {
+const ProfileUploadModal = ({ closeModal, showProfileModal, updateProfilePicUrl}) => {
   // Hooks
   const axios = useAxiosPersonal()
+  const user = useSelector(userSelector)
+  const dispatch = useDispatch()
+
 
   // Variables
   const [selectedFile, setSelectedFile] = useState();
@@ -33,24 +39,28 @@ const ProfileUploadModal = ({ closeModal, showProfileModal}) => {
 
     let message, status
     try {
-      const resp = await axios.post('/upload-profile-photo', formData)
+      const resp = await axios.post('/bucket/picture', formData)
       console.log(resp)
       message = resp.data.data
-      status = resp.data.status
+      status = 'success'
+      console.log(message)
+      dispatch(await (updatePicture(`${resp.data}?random=${new Date().getSeconds()}`)))
+      updateProfilePicUrl(resp.data)
       closeModal()//setProfileModal(false)
     } catch (error) {
       console.log(error)
       message = error.response.data.message
-      status = error.response.data.status
+      status = 'error'
     }
 
+    
     Swal.fire({
       position: 'top',
       icon: status === 'success' ? 'success' : 'error',
       timer: 2000,
       text: message,
       showConfirmButton: false
-    }).then(()=> window.location.reload())
+    })//.then(()=> window.location.reload())
 
   }
 

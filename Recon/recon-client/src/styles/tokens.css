@@ -1,0 +1,26 @@
+/**
+ * Design tokens — consumed by scaffold.css, components, and migrated screens.
+ * Load order: bootstrap → tokens → scaffold → index.css → general.css (see index.jsx).
+ */
+:root {
+  --recon-color-bg: #f4f6f8;
+  --recon-color-surface: #ffffff;
+  --recon-color-surface-elevated: #ffffff;
+  --recon-color-border: #dee2e6;
+  --recon-color-text: #212529;
+  --recon-color-text-muted: #6c757d;
+  --recon-color-primary: #0d6efd;
+
+  --recon-space-1: 0.25rem;
+  --recon-space-2: 0.5rem;
+  --recon-space-3: 0.75rem;
+  --recon-space-4: 1rem;
+  --recon-space-5: 1.25rem;
+  --recon-space-6: 1.5rem;
+
+  --recon-radius-sm: 0.25rem;
+  --recon-radius-md: 0.375rem;
+  --recon-radius-lg: 0.5rem;
+
+  --recon-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}

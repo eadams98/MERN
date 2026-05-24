@@ -1,0 +1,24 @@
+[build]
+base = "Recon/recon-client"
+command = "npm run build"
+publish = "/build"
+functions = "Recon/recon-client/netlify/functions"
+
+[build.environment]
+NODE_ENV = "production"
+CI = "false"
+NODE_VERSION = "12.22.0"
+
+# The following redirect is intended for use with most SPAs that handle
+# routing internally.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  # Define which paths this specific [[headers]] block will cover.
+  for = "/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
+

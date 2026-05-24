@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import swal from "sweetalert2";
 import UserService from "../../Services/User"
 
 /*type UserType = {
@@ -18,7 +19,8 @@ const initialState = {
   isAuthenticate: false,
   name: "",
   token: null,
-  user: null
+  user: null,
+  profilePicture: ""
 }
 
 const  userSlice = createSlice({
@@ -36,9 +38,14 @@ const  userSlice = createSlice({
     getUser: (state) => {
       state.isLoading = true
     },
-    updateUserToken: (state, {payload}) => {
-      state.user.accessToken = payload
+    updateUserToken: (state, action) => {
+      state.user.token = action.payload
       state.isLoading = false
+      console.log("USER TOKEN UPDATE")
+      console.log(state.user)
+    },
+    updateUserProfilePhote: (state, {payload}) => {
+      state.user.pictureURL = payload
     },
     login: (state) => {
       state.isLoading = true
@@ -59,15 +66,33 @@ const  userSlice = createSlice({
       state.name = "";
       state.user = null
       state.isLoading = false
+    },
+    loadingInProgress: (state) => {
+      state.isLoading = true
+    },
+    loadingComplete: (state) => {
+      state.isLoading = false
     }
   }
 });
 
 export const userSelector = (state) => state.user;
-export const {logout, login, getUser, loginSuccess, loginFail, resetUser, updateUserToken} = userSlice.actions;
+export const {logout, login, getUser, loginSuccess, loginFail, resetUser, updateUserToken, updateUserProfilePhote, loadingInProgress, loadingComplete} = userSlice.actions;
 export default userSlice.reducer;
 
 //API
+export function setLoadingInProgress() {
+  return async (dispatch) => {
+    dispatch(loadingInProgress())
+  }
+}
+
+export function setLoadingComplete() {
+  return async (dispatch) => {
+    dispatch(loadingComplete())
+  }
+}
+
 export function resetAuth() {
   return async (dispatch) => {
     dispatch(getUser())
@@ -91,21 +116,31 @@ export function updateAuth(newAccessToken) {
   }
 }
 
-export function attemptLogin(user, pass) {
+export function attemptLogin(user, pass, userType) {
   console.log("ATTEMPT LOGIN DISPATCH")
   return async (dispatch) => {
     dispatch(getUser())
     setTimeout(async ()=>{
       try {
         console.log("Before")
-        const response = await UserService.loginAttempt({ email: user, password: pass })
+        const response = await UserService.loginAttempt({ username: user, password: pass }, userType)
         console.log("Response = ", response.data)
-        dispatch(loginSuccess(response.data.data))
+        dispatch(loginSuccess(response.data))
       } catch (error) {
         console.log(error.response.data)
+        console.log(error)
         dispatch(loginFail(error.response.data.message))
+        swal.fire({
+          position: 'top',
+          icon: 'error',
+          title:"ERROR",
+          text: error.response.data.errorMessage,
+          footer: error.response.data.timestamp,
+          showConfirmButton: false,
+          timer: 3000
+      })
       }
-    }, 10000)
+    }, 1000)
     
   }
 }
@@ -117,6 +152,20 @@ export function attemptLogout() {
       dispatch(logout())
     } catch (error) {
       console.log(error)
+    }
+  }
+}
+
+export function updatePicture(src) {
+  return async (dispatch) => {
+    
+    try {
+      dispatch(updateUserProfilePhote(src))
+      //dispatch(resetUser())
+    } catch (error) {
+      console.log(error)
+    } finally {
+      console.log(userSelector.toString())
     }
   }
 }

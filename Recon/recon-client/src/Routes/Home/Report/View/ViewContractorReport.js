@@ -1,3 +1,4 @@
+import React from 'react';
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Col, Container, Form, FormGroup, Row, Button, FormLabel, Spinner } from "react-bootstrap"
 import { useSelector } from "react-redux";
@@ -9,6 +10,8 @@ import SelectUser from "./SelectUser/SelectUser";
 import SelectUserWeek from "./SelectUserWeek/SelectUserWeek";
 //const SelectUser = lazy(() => import("./SelectUser/SelectUser"))
 
+// Styles
+import pageStyles from '../../../../CSS/Modules/Page.module.css'
 
 const ViewContractorReport = () => {
   
@@ -33,16 +36,16 @@ const ViewContractorReport = () => {
   // methods
 
   return(
-    <Container fluid style={{ backgroundColor: "yellow", height: "100%" }}>
+    <Container fluid className="fullScreen">
       <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center"}}> 
         <Col> {/* <Col className='h-75'> */}
         
           { 
-            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent} axiosURL="get-my-users-with-reports"/> : null
+            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} setIsLoadingInParent={setIsLoadingInParent} axiosURL={`/contractor/${user.user.id}/trainees`}/> : null
           }
 
           { 
-            userID ? <SelectUserWeek userID={userID} setReportWeekInParent={setReportWeekInParent} resetParent={() => {setUserID(""); setReportWeek("");}} role={user.user.role}/> : null
+            userID ? <SelectUserWeek userID={userID} setReportWeekInParent={setReportWeekInParent} resetParent={() => {setUserID(""); setReportWeek("");}} role={user.user.roles[0].authority}/> : null
           }
 
         </Col>

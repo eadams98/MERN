@@ -24,3 +24,18 @@
 style={tab === "current" ? 
   {backgroundColor: "yellow", border: "none", color: "black", borderRadius: 0}
   {backgroundColor: "grey", border: "none", borderRadius: 0}}*/
+
+.loginInactive {
+  background-color: grey;
+}
+
+.loginInactive:hover {
+  background-color: slategray;
+  cursor: pointer;
+  /*color: wheat;*/
+}
+
+.loginActive {
+  background-color: #0d6efd;
+  color: white;
+}

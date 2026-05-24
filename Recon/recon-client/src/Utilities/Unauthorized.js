@@ -1,3 +1,4 @@
+import React from 'react';
 import { stringify } from 'json5'
 import { useSelector } from 'react-redux'
 import { Outlet, Navigate, useLocation } from 'react-router-dom'
@@ -15,14 +16,20 @@ const Unauthorized = () => {
   const accessMapping = {
     "JR. CONTRACTOR": new Set(["/home/report/view", "/home/profile"]),
     "CONTRACTOR": new Set(["/home/report/view", "/home/report/create", "/home/profile"]),
-    "SCHOOL": new Set(["/home/report/view", "/home/connections", "/home/profile"])
+    "SCHOOL": new Set(["/home/report/view", "/home/connections", "/home/profile", "/home/connections"])
   };
 
+  const convert = {
+    "trainee": "JR. CONTRACTOR",
+    "contractor": "CONTRACTOR",
+    "school": "SCHOOL"
+  }
+
   return (
-    auth.isLoading ?
+    /*auth.isLoading ?
       <div>LOADING</div>
-      :
-      accessMapping[auth.user.role].has(location.pathname) ? <Outlet/> : <div>UNAUTHORIZED ACCESSED</div>
+      :*/
+      accessMapping[convert[auth.user.roles[0].authority]].has(location.pathname) ? <Outlet/> : <div className="fullScreen" style={{display: 'flex', alignItems: "center", justifyContent: "center"}}><div>UNAUTHORIZED ACCESSED</div></div>
   )
 }
 

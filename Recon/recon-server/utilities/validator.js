@@ -58,6 +58,24 @@ exports.isValidRole = async (userID, role) => { // WORK IN PROGRESS
   }
 }
 
+exports.isValidConnection = async (userID, role) => {
+  try {
+    const user = await UserModel.findOne({ userID: userID })
+    switch(user.role) {
+      case "CONTRACTOR":
+        break
+      case "JR. CONTRACTOR":
+        break
+      case "S":
+        break
+      default:
+        return false
+    }
+  } catch (error) {
+    return false
+  }
+}
+
 // Report Validator
 exports.isValidGrade = (grade) => {
   const GRADES = new Set([

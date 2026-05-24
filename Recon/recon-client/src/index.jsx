@@ -1,6 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+// Global styles: Bootstrap → design tokens → scaffold → CRA index → legacy general (see README)
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/tokens.css';
+import './styles/scaffold.css';
 import './index.css';
+import './CSS/general.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
@@ -13,7 +18,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById('root')
 );
 
 const persistConfig= {

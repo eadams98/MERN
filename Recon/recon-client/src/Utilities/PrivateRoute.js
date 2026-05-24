@@ -1,3 +1,4 @@
+import React from 'react';
 import { stringify } from 'json5'
 import { useSelector } from 'react-redux'
 import { Outlet, Navigate } from 'react-router-dom'
@@ -11,9 +12,9 @@ const PrivateRoutes = () => {
   })
   console.log(auth)
   return (
-    auth.isLoading ?
+    /*auth.isLoading ?
       <div>LOADING</div>
-      :
+      :*/
       auth.user ? <Outlet/> : <Navigate to="/"/>
   )
 }

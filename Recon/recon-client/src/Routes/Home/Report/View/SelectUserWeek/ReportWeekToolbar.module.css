@@ -1,0 +1,28 @@
+.toolbarRow {
+  min-height: 3.5rem;
+  align-items: center;
+  border-bottom: 1px solid var(--recon-color-border, #dee2e6);
+  padding: var(--recon-space-2, 0.5rem) 0;
+  margin-bottom: var(--recon-space-3, 0.75rem);
+  background: var(--recon-color-surface-elevated, #fff);
+}
+
+.toolbarCol {
+  display: flex;
+  align-items: center;
+}
+
+.backLink {
+  margin: auto;
+  text-align: center;
+  cursor: pointer;
+  color: var(--recon-color-primary, #0d6efd);
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.select {
+  margin: auto;
+  text-align: center;
+  width: 100%;
+}

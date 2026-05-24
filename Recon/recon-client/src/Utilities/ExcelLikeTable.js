@@ -138,7 +138,7 @@ const ExcelLikeTable = forwardRef((props, ref) => {
 
     let previousPage = async () => { 
       try {
-        let resp = await axios.get('get-school-students', {
+        let resp = await axios.get('/get-school-students', {
           params: {
             currentPage: pagination.currentPage - 1
           }
@@ -223,7 +223,7 @@ const ExcelLikeTable = forwardRef((props, ref) => {
       //setPagination({  ...pagination, currentPage: pagination.currentPage + 1, arrayPage: pagination.arrayPage + 1 })
       console.log(`type of: ${typeof pagination.currentPage}`)
       try {
-        let resp = await axios.get('get-school-students', {
+        let resp = await axios.get('/get-school-students', {
           params: {
             currentPage: pagination.currentPage + 1
           }
@@ -313,7 +313,7 @@ const ExcelLikeTable = forwardRef((props, ref) => {
         //console.log(e.target.value)
         if (pagination.currentPage <= pagination.totalPages && pagination.currentPage > 0) {
           try {
-            let resp = await axios.get('get-school-students', {
+            let resp = await axios.get('/get-school-students', {
               params: {
                 currentPage: pagination.currentPage
               }
@@ -394,7 +394,7 @@ const ExcelLikeTable = forwardRef((props, ref) => {
           }
         } else {
           try {
-            let resp = await axios.get('get-school-students', {
+            let resp = await axios.get('/get-school-students', {
               params: {
                 currentPage: 1
               }
@@ -558,7 +558,7 @@ const ExcelLikeTable = forwardRef((props, ref) => {
             switch(props.tableName) {
               case "current connections":
                 try {
-                  let resp = await axios.get('get-school-students')
+                  let resp = await axios.get('/get-school-students')
                   resp = resp.data
                   console.log(resp.data, resp.data.pages)
 

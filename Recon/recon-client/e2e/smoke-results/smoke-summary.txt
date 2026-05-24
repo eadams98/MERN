@@ -1,0 +1,8 @@
+PASS     Contractor login — Redirected to /home
+PASS     Contractor profile — firstName=Bob
+PASS     Contractor trainees (profile table) — 8 rows, sample: 0		trainee.1@yahoo.com		
+PARTIAL  Report years page — Trainee selected but year dropdown empty. Options: No Months
+PASS     School login — Redirected to /home
+PASS     School profile — schoolName="Aztec"
+PASS     Trainee login — Redirected to /home
+PASS     Trainee profile — firstName="Trainee"

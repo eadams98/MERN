@@ -1,6 +1,6 @@
+import React from 'react';
 import { useEffect, useState } from "react";
 import { Col, Container, Form, FormGroup, Row, Button } from "react-bootstrap"
-import ReportService from "../../../../Services/Report";
 import { useSelector } from "react-redux";
 import { userSelector } from "../../../../State/Slices/userSlice";
 import Swal from "sweetalert2";
@@ -16,6 +16,9 @@ const GenerateReport = () => {
   const refresh = useRefreshToken()
   const axios = useAxiosPersonal()
 
+  useEffect(() => {
+    console.log(user)
+  }, [])
   
   const [userID, setUserID] = useState("")
 
@@ -23,11 +26,11 @@ const GenerateReport = () => {
   const setUserIDInParent = (userID) => { setUserID(userID); console.log(userID) }
 
   return(
-    <Container fluid style={{ backgroundColor: "yellow", height: "100%" }}>
+    <Container fluid className="fullScreen">
       <Row style={{display:'flex', alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center"}}> 
         <Col>{/*<Col className='h-75'>*/}
           { 
-            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} axiosURL="get-my-jr-contractors"/> : null
+            !userID ? <SelectUser setUserIDInParent={setUserIDInParent} axiosURL={`/contractor/${user.user.id}/trainees`}/> : null
           }
           {
             userID ? <NewReportForm userID={userID} resetUserID={() => setUserID("")}/> : null

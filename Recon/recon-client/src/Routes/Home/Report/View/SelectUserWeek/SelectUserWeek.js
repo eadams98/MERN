@@ -1,21 +1,49 @@
+import React from 'react';
 import { useEffect, useState } from "react";
-import { Col, Container, Form, FormGroup, Row, Button, FormLabel, Spinner } from "react-bootstrap"
+import { useSelector } from "react-redux";
+import { userSelector } from "../../../../../State/Slices/userSlice";
+import { Col, Container, Form, Row, Button, FormLabel, Spinner } from "react-bootstrap"
+import ContentCard from "../../../../../components/page/ContentCard";
+import ReportWeekToolbar from "./ReportWeekToolbar";
+import styles from "./SelectUserWeek.module.css";
 import useAxiosPersonal from "../../../../../Hooks/useAxiosPersonal";
 import _ from 'lodash'
 import useSnapshots from "../../../../../Hooks/useSnapshots";
 import Swal from "sweetalert2";
+import { REPORTS_BASE_URL } from "../../../../../Utilities/URLs";
+import {
+  finalizeReport,
+  createTraineeRetort,
+  getSchoolReport,
+  getSchoolReportYears,
+  getSchoolReportMonths,
+  getSchoolReportWeeks,
+} from "../../../../../Services/reportApi";
 
-const SelectUserWeek = ({userID, role, resetParent}) => {
+const SelectUserWeek = ({userID, contractorEmail, role, resetParent}) => {
   //Hooks
   const axios = useAxiosPersonal()
   const snapshots = useSnapshots()
+  const user = useSelector(userSelector)
+
+  // Services
+  //const reportService = ReportService()
 
   //Variables
+  const [reportYear, setReportYear] = useState("")
+  const [reportMonth, setReportMonth] = useState("")
   const [reportWeek, setReportWeek] = useState("")
-  const [reportWeeks, setReportWeeks] = useState([])
+  const [isError, setIsError] = useState(false)
+
+  const [reportYears, setReportYears] = useState([])
+  const [reportMonths, setReportMonths] = useState([])
+  const [reportDays, setReportDays] = useState([])
+
   const [reportForm, setReportForm] = useState({})
   const [inRevise, setInRevise] = useState(false)
   const [loading, setLoading] = useState(true)
+  /** Draft text for POST /trainee/create-retort (one retort per report) */
+  const [retortDraft, setRetortDraft] = useState("")
   const GRADES = [
     "A+", "A", "A-",
     "B+", "B", "B-",
@@ -24,7 +52,7 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
     "F+", "F", "F-",
   ]
 
-  // Methods
+  // Methods 
   const checkSnapshotValidation = () => {
     const snapshot = snapshots.GetSnapshot('reportForm')
     console.log(reportForm, snapshot)
@@ -39,14 +67,73 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
     setReportForm((prevState) => {return { ...prevState, [name]: value }})
   }
 
+  const parseWeekRange = () => {
+    const parts = (reportWeek || "").split(" - ")
+    if (parts.length < 2) return null
+    return { weekStart: parts[0].trim(), weekEnd: parts[1].trim() }
+  }
+
+  const handleFinalizeRating = async () => {
+    const wr = parseWeekRange()
+    if (!wr || role?.toLowerCase() !== "contractor") return
+    setLoading(true)
+    try {
+      const res = await finalizeReport(axios, REPORTS_BASE_URL, {
+        byEmail: user.user.email,
+        forEmail: userID,
+        weekStart: wr.weekStart,
+        weekEnd: wr.weekEnd,
+      })
+      setReportForm((prev) => ({
+        ...prev,
+        isFinalized: res.data.isFinalized,
+        finalizedAt: res.data.finalizedAt,
+      }))
+      Swal.fire({ position: "top", icon: "success", timer: 2000, text: "Rating finalized." })
+    } catch (e) {
+      const msg = e.response?.data?.errorMessage ?? e.message ?? "Could not finalize."
+      Swal.fire({ position: "top", icon: "error", timer: 2500, text: msg })
+    }
+    setLoading(false)
+  }
+
+  const handleSubmitTraineeRetort = async () => {
+    const wr = parseWeekRange()
+    if (!wr || role?.toLowerCase() !== "trainee" || !retortDraft.trim()) return
+    setLoading(true)
+    try {
+      const res = await createTraineeRetort(axios, REPORTS_BASE_URL, {
+        content: retortDraft.trim(),
+        sentByEmail: contractorEmail,
+        sentForEmail: user.user.email,
+        weekStartDate: wr.weekStart,
+        weekEndDate: wr.weekEnd,
+      })
+      setReportForm((prev) => ({
+        ...prev,
+        retortContent: res.data.retortContent ?? retortDraft.trim(),
+      }))
+      setRetortDraft("")
+      Swal.fire({ position: "top", icon: "success", timer: 2000, text: "Retort saved." })
+    } catch (e) {
+      const msg = e.response?.data?.errorMessage ?? e.message ?? "Could not save retort."
+      Swal.fire({ position: "top", icon: "error", timer: 2500, text: msg })
+    }
+    setLoading(false)
+  }
+
   const submitRevision = async () => {
     setLoading(true)
     try {
-      const response = await axios.put(`/update-report`, reportForm)
+      console.log(reportForm)
+      const isRevisionByTrainee = role === "trainee" ? true : false
+      const response = await axios({ baseURL: REPORTS_BASE_URL, url:`contractor/update-report?revision=${isRevisionByTrainee}`, method: "put", data: reportForm})
       const updatedSnapshot = {
         ...snapshots.GetSnapshot('reportForm'),
         "grade": reportForm.grade,
-        "description": reportForm.description
+        "description": reportForm.description,
+        "title": reportForm.title,
+        "rebuttal": reportForm.rebuttal
       }
       snapshots.SetSnapshot('reportForm', updatedSnapshot)
       setInRevise(false)
@@ -71,198 +158,486 @@ const SelectUserWeek = ({userID, role, resetParent}) => {
 
   // Effects
   useEffect(() => {
+    console.log(userID)
+    setLoading(true)
     
-    const getReportWeeksOfMyUser = async () => {
+    const getReportYearsOfMyUser = async () => {
       console.log(role)
       let response;
       const defaultContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
+        rebuttal: "",
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
       const defaultJrContractorReportForm = {
-        reportID: "",
+        reportId: "",
         grade: "",
         description: "",
-        revision: "",
+        rebuttal: "",
+        title: "",
+        isFinalized: null,
+        retortContent: "",
       }
-      switch(role) {
-        case "CONTRACTOR": 
+
+      try {
+      switch(role.toLowerCase()) {
+        case "contractor": 
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios.get(`get-my-submitted-reports/${userID}`)
+          //response = await reportService.contractorGetReportYearsOfMyUser(user.user.email, userID)
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/years?by=${user.user.email}&for=${userID}`, method: "get"})
           break
-        case "JR. CONTRACTOR":
+        case "trainee":
           setReportForm(defaultJrContractorReportForm)
           snapshots.SetSnapshot('reportForm')
-          response = await axios.get(`get-my-report-weeks`)
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/years?by=${contractorEmail}&for=${user.user.email}`, method: "get"})
+          break
+        case "school":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await getSchoolReportYears(axios, REPORTS_BASE_URL, contractorEmail, userID)
           break
         default:
           setReportForm(defaultContractorReportForm)
           snapshots.SetSnapshot('reportForm')
       }
-
-      setLoading(true)
-      
       console.log(response)
-      setReportWeeks(response.data)
+      setReportYears(response.data)
+    } catch (err) {
+      setIsError(true)
+      Swal.fire({
+        position: 'top',
+        icon: 'error',
+        timer: 2000,
+        text: "SOME ERROR OCCURED"
+      })
+    }
+      
+      
       setLoading(false)
     }
-    getReportWeeksOfMyUser()
+    getReportYearsOfMyUser()
   }, [])
 
   useEffect(() => {
     const getReport = async () => {
-      let response
+      const wr = parseWeekRange()
+      if (!wr) return
       setLoading(true)
 
-      switch(role) {
-        case "CONTRACTOR": 
-          response = await axios.post(`get-contractor-report`, { week: reportWeek, createdFor: userID })
-          break
-        case "JR. CONTRACTOR":
-          response = await axios.post(`get-jr-contractor-report`, { week: reportWeek })
-          break
-        default:
-          //setReportForm(defaultContractorReportForm)
-      }
-     
-      console.log(response)
-      const updatedReportForm = {
-        ...reportForm,
-        reportID: response.data._id,
-        description: response.data.description,
-        grade: response.data.grade,
-      }
-      setReportForm(updatedReportForm)
-      snapshots.SetSnapshot('reportForm', updatedReportForm)
-
-      setTimeout(()=> {
+      let response
+      try {
+        switch (role.toLowerCase()) {
+          case "contractor":
+            response = await axios({
+              baseURL: REPORTS_BASE_URL,
+              url: `contractor/get-report?by=${encodeURIComponent(user.user.email)}&for=${encodeURIComponent(userID)}&weekStart=${wr.weekStart}&weekEnd=${wr.weekEnd}`,
+              method: "get",
+            })
+            break
+          case "trainee":
+            response = await axios({
+              baseURL: REPORTS_BASE_URL,
+              url: `trainee/get-report?by=${encodeURIComponent(contractorEmail)}&for=${encodeURIComponent(user.user.email)}&weekStart=${wr.weekStart}&weekEnd=${wr.weekEnd}`,
+              method: "get",
+            })
+            break
+          case "school":
+            response = await getSchoolReport(
+              axios,
+              REPORTS_BASE_URL,
+              contractorEmail,
+              userID,
+              wr.weekStart,
+              wr.weekEnd
+            )
+            break
+          default:
+            setLoading(false)
+            return
+        }
+      } catch (error) {
+        console.log(error)
+        const msg =
+          error.response?.data?.errorMessage ??
+          "This report is not visible yet (contractor may not have finalized it)."
+        Swal.fire({ position: "top", icon: "info", timer: 3000, text: msg })
         setLoading(false)
-      },10000)
+        return
+      }
+
+      console.log(response)
+      const d = response.data
+      setReportForm((prev) => {
+        const updatedReportForm = {
+          ...prev,
+          reportId: d.reportId,
+          description: d.description,
+          grade: d.grade,
+          title: d.title,
+          rebuttal: d.rebuttal,
+          isFinalized: d.isFinalized,
+          retortContent: d.retortContent ?? "",
+        }
+        snapshots.SetSnapshot("reportForm", updatedReportForm)
+        return updatedReportForm
+      })
+      setRetortDraft("")
+      setLoading(false)
     }
-    getReport()
-      .catch(error => (console.log(error)))
+    if (reportWeek !== "") {
+      getReport()
+    }
   }, [reportWeek])
 
   useEffect(()=>{
     console.log(reportForm)
   },[reportForm])
 
+  useEffect(()=>{
+    const getReportMonthsOfMyUser = async () => {
+      console.log(role)
+      let response;
+      const defaultContractorReportForm = {
+        reportId: "",
+        grade: "",
+        description: "",
+        rebuttal: "",
+        title: "",
+        isFinalized: null,
+        retortContent: "",
+      }
+      const defaultJrContractorReportForm = {
+        reportId: "",
+        grade: "",
+        description: "",
+        rebuttal: "",
+        title: "",
+        isFinalized: null,
+        retortContent: "",
+      }
+      switch(role.toLowerCase()) {
+        case "contractor": 
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/months?by=${user.user.email}&for=${userID}&year=${reportYear}`, method: "get"})
+          break
+        case "trainee":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/months?by=${contractorEmail}&for=${user.user.email}&year=${reportYear}`, method: "get"})
+
+          break
+        case "school":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await getSchoolReportMonths(axios, REPORTS_BASE_URL, contractorEmail, userID, reportYear)
+          break
+        default:
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+      }
+
+      
+      setLoading(true)
+      console.log(response)
+      setReportMonths(response.data)
+      setLoading(false)
+      
+    }
+    if (reportYear !== "") {
+      getReportMonthsOfMyUser()
+    }
+  },[reportYear])
+
+  useEffect(()=>{
+    const getReportDaysOfMyUser = async () => {
+      console.log(role)
+      let response;
+      const defaultContractorReportForm = {
+        reportId: "",
+        grade: "",
+        description: "",
+        rebuttal: "",
+        title: "",
+        isFinalized: null,
+        retortContent: "",
+      }
+      const defaultJrContractorReportForm = {
+        reportId: "",
+        grade: "",
+        description: "",
+        rebuttal: "",
+        title: "",
+        isFinalized: null,
+        retortContent: "",
+      }
+      switch(role.toLowerCase()) {
+        case "contractor": 
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await axios({ baseURL: REPORTS_BASE_URL, url: `contractor/report/weeks?by=${user.user.email}&for=${userID}&year=${reportYear}&month=${reportMonth}`, method: "get"})
+          break
+        case "trainee":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await axios({
+            baseURL: REPORTS_BASE_URL,
+            url: `trainee/get-contractors?by=${encodeURIComponent(contractorEmail)}&for=${encodeURIComponent(user.user.email)}&year=${reportYear}&month=${encodeURIComponent(reportMonth)}`,
+            method: "get",
+          })
+          break
+        case "school":
+          setReportForm(defaultJrContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+          response = await getSchoolReportWeeks(
+            axios,
+            REPORTS_BASE_URL,
+            contractorEmail,
+            userID,
+            reportYear,
+            reportMonth
+          )
+          break
+        default:
+          setReportForm(defaultContractorReportForm)
+          snapshots.SetSnapshot('reportForm')
+      }
+
+      setLoading(true)
+      console.log(response)
+      setReportDays(response.data)
+      setLoading(false)
+    }
+
+    if (reportMonth !== "") {
+      getReportDaysOfMyUser()
+    }
+  },[reportMonth])
+
   if (loading) { return <Spinner/>}
+  else if (!loading && isError) { return <h1>ERROR LOADING SOME DATA</h1> }
   else return (
-    <Container fluid style={{ backgroundColor: "grey", height: "75vh" }}>
+    <Container fluid className={styles.page}>
+      <ReportWeekToolbar
+        onBack={resetParent}
+        yearOptions={reportYears}
+        monthOptions={reportMonths}
+        weekOptions={reportDays}
+        yearValue={reportYear}
+        monthValue={reportMonth}
+        weekValue={reportWeek}
+        onYearChange={(e) => setReportYear(e.target.value)}
+        onMonthChange={(e) => setReportMonth(e.target.value)}
+        onWeekChange={(e) => setReportWeek(e.target.value)}
+        disabled={inRevise}
+      />
 
-      {/* Row 1 */}
-      <Row style={{ height: "10%", border: "solid" }}>
-          <Col md={1} style={{ display: "flex" }}>
-            <FormLabel onClick={resetParent} style={{ margin: "auto", textAlign: "center", cursor: "pointer" }}>{`< USERS`}</FormLabel>
-          </Col>
-          <Col md={{span: 4, offset: 3}} style={{ display: "flex" }}>
-            <Form.Select
-              value={reportWeek}
-              onChange={(e) => setReportWeek(e.target.value)}
-              disabled={inRevise} 
-              style={{ margin: "auto", textAlign: "center" }} 
-            >
-              <option value="" hidden>{reportWeeks.length > 0 ? '--select a week---' : 'No Weeks'}</option>
-              {
-                reportWeeks.map( (week, idx) => <option key={idx} value={week}> {week} </option>)
-              }
-            </Form.Select>
-          </Col>
-      </Row>
-
-      {/* Row 2 */}
-      <Row style={{ height: "90%", border: "solid", display: "flex"}}>
-        <Container fluid style={{ backgroundColor: "white", height: "90%", margin: "auto" }}>
-          <div style={{height: "20%", border: "solid"}}>
-            <Row>
-              <Col>Grade</Col>
-            </Row>
+      <Row className={styles.mainRow}>
+        <div className={styles.weekBanner}>
+          {reportYear !== "" && reportMonth !== "" && reportWeek !== ""
+            ? `${reportWeek}`
+            : "NO DATE"}
+        </div>
+        <Container fluid className={styles.panel}>
+          <ContentCard className={styles.section}>
+            <div className={styles.sectionLabel}>Grade</div>
             <Row>
               <Col>
-                {
-                  inRevise ?
-                    <Form.Select value={reportForm.grade} name='grade' onChange={updateReportForm} style={{textAlign: "center"}}>
-                      <option value={""}></option>
-                      {GRADES.map((grade, idx) => <option value={grade}>{grade}</option>)}
-                    </Form.Select>
-                    :
-                    <FormLabel>{reportForm.grade}</FormLabel>
-                }
+                {inRevise ? (
+                  <Form.Select
+                    value={reportForm.grade}
+                    name="grade"
+                    onChange={updateReportForm}
+                    style={{ textAlign: "center" }}
+                  >
+                    <option value="" />
+                    {GRADES.map((grade) => (
+                      <option key={grade} value={grade}>
+                        {grade}
+                      </option>
+                    ))}
+                  </Form.Select>
+                ) : (
+                  <FormLabel>{reportForm.grade}</FormLabel>
+                )}
               </Col>
             </Row>
-          </div>
+          </ContentCard>
 
-          <div style={{height: "40%", border: "solid"}}>
-            <Row >
-              <Col>Description</Col>
-            </Row>
+          <ContentCard className={styles.section}>
+            <div className={styles.sectionLabel}>Description</div>
             <Row>
               <Col>
-                {
-                  inRevise ?
-                    <textarea 
-                      name="description"
-                      value={reportForm.description}
-                      onChange={updateReportForm}
-                      style={{ width: "100%", height: "100%", resize: "none"}}
-                    /> 
-                    :
-                    <Form.Label style={{width: "100%"}}>{reportForm.description}</Form.Label>
-                }
+                {inRevise && role === "contractor" ? (
+                  <textarea
+                    name="description"
+                    value={reportForm.description}
+                    onChange={updateReportForm}
+                    className={styles.textarea}
+                    rows={6}
+                  />
+                ) : (
+                  <Form.Label style={{ width: "100%" }}>{reportForm.description}</Form.Label>
+                )}
               </Col>
             </Row>
-          </div>
+          </ContentCard>
 
-          <div style={{height: "30%", border: "solid"}}>
-            {
-              role == "JR. CONTRACTOR" ?
+          {role === "contractor" && reportWeek && reportForm.reportId ? (
+            <ContentCard className={styles.section}>
+              <Row>
+                <Col>
+                  {reportForm.isFinalized ? (
+                    <FormLabel>Status: finalized</FormLabel>
+                  ) : (
+                    <>
+                      <FormLabel>
+                        Draft — finalize to allow school visibility and junior retort.
+                      </FormLabel>
+                      <Button
+                        size="sm"
+                        className="ms-2"
+                        type="button"
+                        onClick={handleFinalizeRating}
+                        disabled={inRevise}
+                      >
+                        Finalize rating
+                      </Button>
+                    </>
+                  )}
+                </Col>
+              </Row>
+            </ContentCard>
+          ) : null}
+
+          {(role === "trainee" || role === "school") && (
+            <ContentCard className={styles.section}>
+              {role === "trainee" ? (
                 <>
-                  <Row style={{height: "20%", border: "solid"}}><Col>Revisions</Col></Row>
-                  <Row style={{height: "80%", border: "solid green"}}>
+                  <div className={styles.sectionLabel}>Retort</div>
+                  <Row className="mb-3">
                     <Col>
-                      {
-                        inRevise ?
+                      {reportForm.retortContent ? (
+                        <Form.Label style={{ width: "100%" }}>
+                          {reportForm.retortContent}
+                        </Form.Label>
+                      ) : reportForm.isFinalized === true ? (
+                        <>
                           <textarea
-                            name="revision"
-                            value={reportForm.revision}
-                            onChange={updateReportForm}
-                            type="textarea"
-                            style={{ width: "100%", height: "100%", resize: "none"}}
-                                               
+                            value={retortDraft}
+                            onChange={(e) => setRetortDraft(e.target.value)}
+                            placeholder="Your retort (one per rating)"
+                            className={styles.textarea}
+                            rows={3}
                           />
-                          :
-                          null
-                      }
+                          <Button
+                            size="sm"
+                            className="mt-1"
+                            type="button"
+                            onClick={handleSubmitTraineeRetort}
+                            disabled={!retortDraft.trim()}
+                          >
+                            Submit retort
+                          </Button>
+                        </>
+                      ) : (
+                        <Form.Label>
+                          Not available until the contractor finalizes this rating.
+                        </Form.Label>
+                      )}
+                    </Col>
+                  </Row>
+                  <div className={styles.sectionLabel}>Revisions (legacy)</div>
+                  <Row>
+                    <Col>
+                      {inRevise ? (
+                        <textarea
+                          name="rebuttal"
+                          value={reportForm.rebuttal}
+                          onChange={updateReportForm}
+                          className={styles.textarea}
+                          rows={5}
+                        />
+                      ) : (
+                        <Form.Label style={{ width: "100%" }}>
+                          {reportForm.rebuttal}
+                        </Form.Label>
+                      )}
                     </Col>
                   </Row>
                 </>
-                :
-                null
-            }
-          </div>
+              ) : (
+                <>
+                  <div className={styles.sectionLabel}>Retort</div>
+                  <Row>
+                    <Col>
+                      <Form.Label style={{ width: "100%" }}>
+                        {reportForm.retortContent || "—"}
+                      </Form.Label>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <small>
+                        School view is read-only (finalized ratings only).
+                      </small>
+                    </Col>
+                  </Row>
+                </>
+              )}
+            </ContentCard>
+          )}
 
-          <Row style={{height: "10%", border: "solid"}}>
-            <Col md={{span: 4, offset: 1}} style={{position: "relative"}}>
-              {
-                inRevise ?
-                  <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} onClick={()=> {setInRevise(false); checkSnapshotValidation()}} variant="danger">Cancel</Button>
-                  :
-                  <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} onClick={()=> setInRevise(true)}>Revise</Button> 
-              }
-            </Col>
-            <Col md={{span: 4, offset: 2}} style={{position: "relative"}}>
-              {
-                inRevise ? <Button style={{position: "absolute", left: "38.5%", bottom: "5%"}} variant="success" onClick={submitRevision} disabled={_.isEqual(reportForm, snapshots.GetSnapshot('reportForm'))}>submit</Button> : null
-              }
-            </Col>
-          </Row>
-          
+          {role !== "school" ? (
+            <Row className={styles.actionsRow}>
+              <Col md={{ span: 4, offset: 1 }} className="text-center">
+                {inRevise ? (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={() => {
+                      setInRevise(false);
+                      checkSnapshotValidation();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    hidden={
+                      !_.isEqual(reportForm, snapshots.GetSnapshot("reportForm"))
+                    }
+                    onClick={() => setInRevise(true)}
+                  >
+                    Revise
+                  </Button>
+                )}
+              </Col>
+              <Col md={{ span: 4, offset: 2 }} className="text-center">
+                {inRevise ? (
+                  <Button
+                    type="button"
+                    variant="success"
+                    onClick={submitRevision}
+                    disabled={_.isEqual(
+                      reportForm,
+                      snapshots.GetSnapshot("reportForm")
+                    )}
+                  >
+                    submit
+                  </Button>
+                ) : null}
+              </Col>
+            </Row>
+          ) : null}
         </Container>
       </Row>
-
     </Container>
   )
 }
