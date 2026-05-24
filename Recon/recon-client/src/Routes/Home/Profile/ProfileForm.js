@@ -103,12 +103,11 @@ const ProfileForm = () => {
     const getProfilePictureURL = async () => {
       try {
         const resp = await axios(`/bucket/picture`)
-        //const encodedUrl = encodeURIComponent(resp.data);
-        const data = resp.data === "success"? "" : resp.data
-        setProfilePicURL({imageSrc: data, imageHash: Math.random()})
-        console.log(resp)
+        const data = resp.data === "success" ? "" : resp.data
+        setProfilePicURL({ imageSrc: data, imageHash: Math.random() })
       } catch (err) {
-        console.log(err)
+        // Local Docker / missing S3 credentials — keep default avatar without surfacing an error
+        setProfilePicURL((prev) => ({ imageSrc: "", imageHash: Math.random() }))
       }
     }
     getProfileDetails()
