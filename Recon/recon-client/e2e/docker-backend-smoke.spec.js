@@ -111,13 +111,13 @@ test.describe("Docker backend smoke (document only)", () => {
         await traineeSelect.selectOption({ label: traineeEmails[0] });
         await page.waitForTimeout(3000);
         await page.screenshot({ path: path.join(OUT, "04-report-years.png"), fullPage: true });
-        const yearSelect = page.locator("select").nth(1);
+        const yearSelect = page.locator('select[aria-label="Report year"]');
         const yearOptions = await yearSelect.locator("option").allTextContents();
         const years = yearOptions.filter((o) => /^\d{4}$/.test(o.trim()));
         if (years.length > 0) {
           record("Report years page", "pass", `Years loaded: ${years.join(", ")}`);
         } else {
-          record("Report years page", "partial", `Trainee selected but year dropdown empty. Options: ${yearOptions.join("|")}`);
+          record("Report years page", "partial", `Trainee selected; year options: ${yearOptions.join("|")}`);
         }
       }
     } catch (e) {
