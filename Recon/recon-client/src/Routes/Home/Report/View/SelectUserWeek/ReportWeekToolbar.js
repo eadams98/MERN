@@ -20,6 +20,23 @@ function ReportWeekToolbar({
   onWeekChange,
   disabled,
 }) {
+  const monthDisabled = disabled || !yearValue;
+  const weekDisabled = disabled || !monthValue;
+  const monthPlaceholder =
+    monthOptions.length > 0
+      ? "--select a month---"
+      : yearValue
+        ? "No months for this year"
+        : "Select a year first";
+  const weekPlaceholder =
+    weekOptions.length > 0
+      ? "--select a day---"
+      : monthValue
+        ? "No weeks for this month"
+        : yearValue
+          ? "Select a month first"
+          : "Select a year first";
+
   return (
     <Row className={styles.toolbarRow}>
       <Col md={1} className={styles.toolbarCol}>
@@ -49,7 +66,7 @@ function ReportWeekToolbar({
           aria-label="Report year"
         >
           <option value="" hidden>
-            {yearOptions.length > 0 ? "--select a year---" : "No Years"}
+            {yearOptions.length > 0 ? "--select a year---" : "No years available"}
           </option>
           {yearOptions.map((y, idx) => (
             <option key={idx} value={y}>
@@ -62,12 +79,12 @@ function ReportWeekToolbar({
         <Form.Select
           value={monthValue}
           onChange={onMonthChange}
-          disabled={disabled}
+          disabled={monthDisabled}
           className={styles.select}
           aria-label="Report month"
         >
           <option value="" hidden>
-            {monthOptions.length > 0 ? "--select a month---" : "No Months"}
+            {monthPlaceholder}
           </option>
           {monthOptions.map((m, idx) => (
             <option key={idx} value={m}>
@@ -80,12 +97,12 @@ function ReportWeekToolbar({
         <Form.Select
           value={weekValue}
           onChange={onWeekChange}
-          disabled={disabled}
+          disabled={weekDisabled}
           className={styles.select}
           aria-label="Report week"
         >
           <option value="" hidden>
-            {weekOptions.length > 0 ? "--select a day---" : "No Days"}
+            {weekPlaceholder}
           </option>
           {weekOptions.map((w, idx) => (
             <option key={idx} value={w}>
