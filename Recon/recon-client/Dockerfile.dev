@@ -1,0 +1,17 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 3000
+
+ENV BROWSER=none \
+    CHOKIDAR_USEPOLLING=true \
+    WDS_SOCKET_HOST=localhost \
+    NODE_OPTIONS=--openssl-legacy-provider
+
+CMD ["npm", "start"]
