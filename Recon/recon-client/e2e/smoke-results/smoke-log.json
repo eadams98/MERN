@@ -1,0 +1,172 @@
+{
+  "log": [
+    {
+      "step": "Contractor login",
+      "status": "pass",
+      "detail": "Redirected to /home"
+    },
+    {
+      "step": "Contractor profile",
+      "status": "pass",
+      "detail": "firstName=Bob"
+    },
+    {
+      "step": "Contractor trainees (profile table)",
+      "status": "pass",
+      "detail": "8 rows, sample: 0\t\ttrainee.1@yahoo.com\t\t"
+    },
+    {
+      "step": "Report years page",
+      "status": "partial",
+      "detail": "Trainee selected but year dropdown empty. Options: No Months"
+    },
+    {
+      "step": "School login",
+      "status": "pass",
+      "detail": "Redirected to /home"
+    },
+    {
+      "step": "School profile",
+      "status": "pass",
+      "detail": "schoolName=\"Aztec\""
+    },
+    {
+      "step": "Trainee login",
+      "status": "pass",
+      "detail": "Redirected to /home"
+    },
+    {
+      "step": "Trainee profile",
+      "status": "pass",
+      "detail": "firstName=\"Trainee\""
+    }
+  ],
+  "apiCalls": [
+    {
+      "method": "POST",
+      "url": "http://localhost:4000/user/authenticate/contractor",
+      "status": 200,
+      "body": "{\"token\":\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjb250cmFjdG9yLjFAeWFob28uY29tIiwicm9sZSI6ImNvbnRyYWN0b3IiLCJleHAiOjE3Nzk1ODI2NDIsImlhdCI6MTc3OTU4MjU4Mn0.U3Qpx5-iD54E-aO-1q_j-17xiqime32wFhskfRO71JLP-p1-5e6VK"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/contractor/1",
+      "status": 200,
+      "body": "{\"email\":\"contractor.1@yahoo.com\",\"firstName\":\"Bob\",\"lastName\":\"The Builder\",\"trainees\":[{\"traineeId\":1,\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\"},{\"traineeId\":3,\"email\":\"trai"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/contractor/1",
+      "status": 200,
+      "body": "{\"email\":\"contractor.1@yahoo.com\",\"firstName\":\"Bob\",\"lastName\":\"The Builder\",\"trainees\":[{\"traineeId\":1,\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\"},{\"traineeId\":3,\"email\":\"trai"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/bucket/picture",
+      "status": 400,
+      "body": "failed"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/bucket/picture",
+      "status": 400,
+      "body": "failed"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/contractor/1/trainees",
+      "status": 200,
+      "body": "[{\"traineeId\":1,\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\"},{\"traineeId\":4,\"email\":\"trainee.4@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"4\"},{\"traineeId\":7,\"email\":\"trainee.7"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/contractor/1/trainees",
+      "status": 200,
+      "body": "[{\"traineeId\":1,\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\"},{\"traineeId\":4,\"email\":\"trainee.4@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"4\"},{\"traineeId\":7,\"email\":\"trainee.7"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4001/contractor/report/years?by=contractor.1@yahoo.com&for=trainee.1@yahoo.com",
+      "status": 200,
+      "body": "[\"2026\"]"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4001/contractor/report/years?by=contractor.1@yahoo.com&for=trainee.1@yahoo.com",
+      "status": 200,
+      "body": "[\"2026\"]"
+    },
+    {
+      "method": "POST",
+      "url": "http://localhost:4000/user/authenticate/school",
+      "status": 200,
+      "body": "{\"token\":\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzY2hvb2wuMUB5YWhvby5jb20iLCJyb2xlIjoic2Nob29sIiwiZXhwIjoxNzc5NTgyNjU5LCJpYXQiOjE3Nzk1ODI1OTl9.BFqhq3tDqvgMqdYFBjE9jJMWCn5Cgs6PlRLNmdfpSHRrHNH8qF55jC13fRiu7eLa"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/school/1",
+      "status": 200,
+      "body": "{\"schoolId\":1,\"schoolName\":\"Aztec\",\"email\":\"school.1@yahoo.com\"}"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/school/1/students",
+      "status": 200,
+      "body": "[{\"traineeId\":1,\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\"},{\"traineeId\":7,\"email\":\"trainee.7@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"7\"},{\"traineeId\":5,\"email\":\"trainee.5"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/school/1",
+      "status": 200,
+      "body": "{\"schoolId\":1,\"schoolName\":\"Aztec\",\"email\":\"school.1@yahoo.com\"}"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/bucket/picture",
+      "status": 400,
+      "body": "failed"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/school/1/students",
+      "status": 200,
+      "body": "[{\"traineeId\":1,\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\"},{\"traineeId\":7,\"email\":\"trainee.7@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"7\"},{\"traineeId\":5,\"email\":\"trainee.5"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/bucket/picture",
+      "status": 400,
+      "body": "failed"
+    },
+    {
+      "method": "POST",
+      "url": "http://localhost:4000/user/authenticate/trainee",
+      "status": 200,
+      "body": "{\"token\":\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0cmFpbmVlLjFAeWFob28uY29tIiwicm9sZSI6InRyYWluZWUiLCJleHAiOjE3Nzk1ODI2NjQsImlhdCI6MTc3OTU4MjYwNH0.jXV-rmpJmATAphFxzjyDyPzngdlmWr-Hm3eRyI0skrxz5Sd2_1c2bb6bcz7sS"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/trainee/1",
+      "status": 200,
+      "body": "{\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\",\"supervisor\":{\"email\":\"contractor.1@yahoo.com\",\"firstName\":\"Bob\",\"lastName\":\"The Builder\"}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/trainee/1",
+      "status": 200,
+      "body": "{\"email\":\"trainee.1@yahoo.com\",\"firstName\":\"Trainee\",\"lastName\":\"1\",\"supervisor\":{\"email\":\"contractor.1@yahoo.com\",\"firstName\":\"Bob\",\"lastName\":\"The Builder\"}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/bucket/picture",
+      "status": 400,
+      "body": "failed"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:4000/bucket/picture",
+      "status": 400,
+      "body": "failed"
+    }
+  ]
+}
