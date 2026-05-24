@@ -86,12 +86,12 @@ test.describe("Docker backend smoke (document only)", () => {
       const count = await rows.count();
       const firstRowText = count > 0 ? await rows.first().innerText() : "";
       await page.screenshot({ path: path.join(OUT, "03-contractor-trainees-profile-table.png"), fullPage: true });
-      if (count >= 1 && firstRowText.includes("trainee")) {
-        record("Contractor trainees (profile table)", "pass", `${count} rows, sample: ${firstRowText.slice(0, 80)}`);
-      } else if (count >= 1) {
-        record("Contractor trainees (profile table)", "partial", `${count} rows but names may be blank — row: ${firstRowText.slice(0, 80)}`);
+      if (count >= 1 && /Trainee\s+1/i.test(firstRowText)) {
+        record("Contractor trainees (profile table)", "pass", `${count} rows, first row: ${firstRowText.slice(0, 80)}`);
+      } else if (count >= 1 && firstRowText.includes("trainee")) {
+        record("Contractor trainees (profile table)", "partial", `${count} rows but name missing — row: ${firstRowText.slice(0, 80)}`);
       } else {
-        record("Contractor trainees (profile table)", "fail", "No table rows rendered");
+        record("Contractor trainees (profile table)", "fail", "No trainee rows rendered");
       }
     } catch (e) {
       record("Contractor trainees (profile table)", "fail", String(e.message || e));

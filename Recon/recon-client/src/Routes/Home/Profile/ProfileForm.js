@@ -9,6 +9,17 @@ import defaultProfilePicture from '../../../Default-Profile-Picture.jpeg';
 import Swal from "sweetalert2"
 import ProfileUploadModal from "./ProfileUploadModal"
 
+const getConnectionName = (connection) => {
+  const fullName = [connection.firstName, connection.lastName].filter(Boolean).join(" ");
+  return connection.name || fullName || connection.email || "Unknown";
+};
+
+const getConnectionSchool = (connection) =>
+  connection.schoolName || connection.school || "—";
+
+const getConnectionAvgGrade = (connection) =>
+  connection.avgGrade ?? connection.averageGrade ?? "—";
+
 const ProfileForm = () => {
   // Hooks
   const axios = useAxiosPersonal()
@@ -254,10 +265,10 @@ const ProfileForm = () => {
                           return (
                             <tr key={idx}> 
                               <td>{idx}</td>
-                              <td>{connection.name}</td>
+                              <td>{getConnectionName(connection)}</td>
                               <td>{connection.email}</td>
-                              <td>{connection.school}</td>
-                              <td>{connection.avgGrade}</td>
+                              <td>{getConnectionSchool(connection)}</td>
+                              <td>{getConnectionAvgGrade(connection)}</td>
                             </tr>
                           )
                         })
