@@ -19,13 +19,27 @@ const trimTrailingSlashes = (u) =>
 const DEFAULT_API = "https://www.datareconreports.com";
 const DEFAULT_REPORTS = "https://www.datareconreports.com/reports";
 
+/** When REACT_APP_* is missing, dev builds default to local services (never silent prod). */
+const isDevelopment = process.env.NODE_ENV === "development";
+const DEV_DEFAULT_API = "http://localhost:4000";
+const DEV_DEFAULT_REPORTS = "http://localhost:4001";
+
 export const BASE_URL = trimTrailingSlashes(
-  process.env.REACT_APP_API_BASE_URL || DEFAULT_API
+  process.env.REACT_APP_API_BASE_URL ||
+    (isDevelopment ? DEV_DEFAULT_API : DEFAULT_API)
 );
 
 export const REPORTS_BASE_URL = trimTrailingSlashes(
-  process.env.REACT_APP_REPORTS_BASE_URL || DEFAULT_REPORTS
+  process.env.REACT_APP_REPORTS_BASE_URL ||
+    (isDevelopment ? DEV_DEFAULT_REPORTS : DEFAULT_REPORTS)
 );
+
+if (isDevelopment && !process.env.REACT_APP_REPORTS_BASE_URL) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    "[URLs] REACT_APP_REPORTS_BASE_URL unset — using localhost:4001. Set REACT_APP_REPORTS_BASE_URL in .env.development(.local) to override."
+  );
+}
 
 /** @deprecated Use REPORTS_BASE_URL */
 export const LOCAL_REPORT_URL = REPORTS_BASE_URL;
